@@ -1,5 +1,8 @@
 used-style
 ====
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/theKashey/used-styles.svg)](https://greenkeeper.io/)
+
 Get all the styled you have used to render a page.
 
 > Bundler independent CSS part of SSR-friendly code splitting
