@@ -15,13 +15,7 @@ describe('css stream', () => {
         f: ['5', '6'],
       }
     );
-    expect(map).toEqual({
-      1: true,
-      2: true,
-      3: true,
-      5: true,
-      6: true,
-    })
+    expect(map).toEqual(["1", "2", "3", "5", "6"]);
   });
 
   it('React.renderToStream', async () => {
