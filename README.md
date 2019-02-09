@@ -1,6 +1,18 @@
-used-style
+<div align="center">
+  <h1>used-style</h1>
+  <br/>
+  Get all the styled you have used to render a page. 
+  <br/>
+  <br/>
+  
+  [![Build Status](https://travis-ci.org/theKashey/used-styles.svg?branch=master)](https://travis-ci.org/theKashey/used-styles)
+  [![NPM version](https://img.shields.io/npm/v/used-styles.svg)](https://www.npmjs.com/package/used-styles)
+
+</div>
+
+
 ====
-Get all the styled you have used to render a page.
+
 
 > Bundler independent CSS part of SSR-friendly code splitting
 
