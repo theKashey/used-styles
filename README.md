@@ -11,26 +11,50 @@ Code splitting is a good feature, and SSR is also awesome, but then you have
 to load all the use `scripts` on the client, before making a page alive.
 
 That's done, in a different ways. That's not a big task, as long as the _usage_ of code splitted block
-is _trackable_. CSS is harder - you might just use random classes and what next?
+is _trackable_ - you are using it. 
+
+CSS is harder - you might just use random classes and what next? You are just importing CSS here and where,
+sometimes indirectly, and there is no way to understand whats happening.
 
 > While it's possible for webpack to add a `Link` to document header once some `Component` uses some `Style`,
 you can't do the same in the __concurrent__ server environment - there is no <head/> to add a Link.
+
+Code splitting libraries solved it straight forward - by building resource graph, and fetching all
+bound resources to that graph, but tracking is hard, and quite bound to the bundler, and could delay content sending.
 
 ## Solution
 1. Scan all `.css` files, extracting all the style names.
 2. Scan resulting `html`, finding all the `classNames` used
 3. Calculate all the files you shall send to a client.
 
+Bonus: Do the same for streams.
+
+Bonus: Do it only for `used styled`, not just imported somewhere. 
+
 # API
+## Discovery API
+Use to scan your `dist` folder to create a look up table between classNames and files they are described in.
+
 1. `getProjectStyles(buildDirrectory)` - generates class lookup table
+
+## Scanners
+Use to get used styled from render result or a stream
+
 2. `getUsedStyles(html): string[]` - returns all used files
 3. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream.
+
+### React
+There is absolutely the same scanners, but for `React`. Basically it's a simpler version of original scanner,
+which rely on the "correct" HTML emitted from React, and just __twice faster__.
 
 # Example
 ## Static rendering
 There is nothing interesting here - just render, just `getUsedStyles`.
 ```js
 import {getProjectStyles, getUsedStyles} from 'used-styles';
+// or
+import {getProjectStyles} from 'used-styles';
+import {getUsedStyles} from 'used-styles/react';
 
 // generate lookup table on server start
 const lookup = getProjectStyles('./build');
@@ -57,7 +81,7 @@ Idea is to:
 That's all are streams, concatenated in a right order.
 It's possible to interleave them, but that's is not expected buy a `hydrate`. 
 ```js
-import {getProjectStyles, createStyleStream} from 'used-styles';
+import {getProjectStyles, createStyleStream, createLink} from 'used-styles';
 import MultiStream from 'multistream';
 
 // generate lookup table on server start
@@ -76,6 +100,8 @@ const htmlStream = ReactDOM.renderToNodeStream(<App />)
 // create a style steam
 const styledStream = createStyleStream(projectStyles, (style) => {
     // emit a line to header Stream
+    headerStream.push(createLink(`dist/${style}`));
+    // or
     headerStream.push(`<link href="dist/${style}" rel="stylesheet">\n`);
 });
 
@@ -106,6 +132,60 @@ htmlStream.on('end', () => {
 > This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
 from __react-imported-component__.
 
+### Interleaved Stream rendering
+In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
+It's quite similar how StyledComponents works
+```js
+import {getProjectStyles, createLink} from 'used-styles';
+import {createStyleStream} from 'used-styles/react';
+import MultiStream from 'multistream';
+
+// generate lookup table on server start
+const lookup = await getProjectStyles('./build'); // __dirname usually
+
+// small utility for "readable" streams
+const readable = () => {
+  const s = new Readable();
+  s._read = () => true;
+  return s;
+};
+
+// render App
+const htmlStream = ReactDOM.renderToNodeStream(<App />)
+
+// create a style steam
+const styledStream = createStyleStream(projectStyles, (style) => {
+  // _return_ link tag, and it will be appened to the stream output
+    return createLink(`dist/${style}`)
+});
+
+// allow client to start loading js bundle
+res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+
+const middleStream = readableString('</head><body><div id="root">');
+const endStream = readableString('</head><body>');
+
+// concatenate all steams together
+const streams = [
+    // headerStream, // we dont need this stream
+    middleStream, // end of a header, and start of a body
+    styledStream, // the main content
+    endStream,    // closing tags
+];
+
+MultiStream(streams).pipe(res);
+
+// start by piping react and styled transform stream
+htmlStream.pipe(styledStream);
+```
+
+__!! THIS IS NOT THE END !!__ Interleaving links and react output would produce break client side rehydration,
+as long as _injected_ links are not rendered by React, and not expected to present in the "result" HTML code.
+
+You have to move injected styles prior rehydration.
+```js
+import { moveStyles } from 'used-styles/moveStyles';
+```
 
 # Performance
 Almost unmeasurable. It's a simple and single RegExp, which is not comparable to the React Render itself.

@@ -11,3 +11,4 @@ export interface StyleFile {
 
 export type StyleDef = Record<string, Record<string, boolean>>;
 export type UsedTypes = string[];
+export type UsedTypesRef = Record<string, boolean>;

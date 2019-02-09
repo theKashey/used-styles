@@ -2,47 +2,31 @@
 import {Transform} from 'stream';
 import {CacheLine, StylesLookupTable, UsedTypes, UsedTypesRef} from "./types";
 
-const findLastBrace = (data: string): number => {
-  let fromIndex = 0;
-  while (true) {
-    const classNamePosition = data.indexOf('class=', fromIndex);
-    const endBrace = data.indexOf('>', Math.max(classNamePosition, fromIndex + 1)) + 1;
-    if (endBrace === 0) {
-      break;
-    }
-    fromIndex = Math.max(classNamePosition, endBrace);
-  }
-  return fromIndex;
-};
-
-
 export const process = (chunk: string, line: CacheLine, lookupTable: StylesLookupTable, callback: (styles: UsedTypes) => void): string => {
-  const data = line.tail + chunk;
+  callback(getUsedStyles(chunk, lookupTable));
 
-  const lastBrace = findLastBrace(data);
-  const usedString = data.substring(0, lastBrace);
-
-  callback(getUsedStyles(usedString, lookupTable));
-
-  line.tail = data.substring(lastBrace);
-  return usedString;
+  return chunk;
 };
 
 const createLine = (): CacheLine => ({
   tail: '',
 });
 
+const classPlaceholder = 'class="';
+
 export const getUsedStyles = (str: string, lookupTable: StylesLookupTable): UsedTypes => (
   Object.keys(
     [
-      ...(str.match(/class=["']([^"]+)["']/g) || []),
-      ...(str.match(/class=([^"'\s>]+)/g) || []),
+      ...(str.match(/class="([^"]+)"/g) || []),
     ].reduce((styles, className) => {
-      const classes = className.replace(/(class|'|"|=)+/g, '').split(' ');
+      const classes = className
+        .substr(classPlaceholder.length, className.length - classPlaceholder.length - 1)
+        .split(' ');
+
       classes.forEach(singleClass => {
         const files = lookupTable[singleClass];
         if (files) {
-          files.forEach((file: string) => styles[file] = true);
+          files.forEach((file:string) => styles[file] = true);
         }
       });
       return styles;
@@ -78,7 +62,7 @@ export const createStyleStream = (lookupTable: StylesLookupTable, callback: (sty
     },
 
     flush(cb) {
-      cb(undefined, line.tail);
+      cb();
     }
   });
 };
