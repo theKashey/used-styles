@@ -69,16 +69,22 @@ import {getProjectStyles} from 'used-styles';
 import {getUsedStyles} from 'used-styles/react';
 
 // generate lookup table on server start
-const lookup = await getProjectStyles('./build');
+const stylesLookup = getProjectStyles('./build');
 
-// render App
-const markup = ReactDOM.renderToString(<App />)
-const usedStyles = getUsedStyles(markup, lookup);
+async function MyRender () {
+  const lookup = await stylesLookup;// it was a promise
+  // render App
+  const markup = ReactDOM.renderToString(<App />)
+  const usedStyles = getUsedStyles(markup, lookup);
 
-usedStyles.forEach(style => {
-  const link = `<link href="build/${style}" rel="stylesheet">\n`;
-  // append this link to the header output
-});
+  usedStyles.forEach(style => {
+    const link = `<link href="build/${style}" rel="stylesheet">\n`;
+    // append this link to the header output
+  });
+}
+
+// don't forget to call
+MyRender();
 ```
 ### Stream rendering
 Stream rendering is much harder. The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
@@ -97,7 +103,7 @@ import {getProjectStyles, createStyleStream, createLink} from 'used-styles';
 import MultiStream from 'multistream';
 
 // generate lookup table on server start
-const lookup = await getProjectStyles('./build'); // __dirname usually
+const stylesLookup = getProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
 const readable = () => {
@@ -106,40 +112,43 @@ const readable = () => {
   return s;
 };
 
-// render App
-const htmlStream = ReactDOM.renderToNodeStream(<App />)
+async function MyRender() {
+  // render App
+  const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
-// create a style steam
-const styledStream = createStyleStream(projectStyles, (style) => {
-    // emit a line to header Stream
-    headerStream.push(createLink(`dist/${style}`));
-    // or
-    headerStream.push(`<link href="dist/${style}" rel="stylesheet">\n`);
-});
+  const lookup = await stylesLookup;
+  // create a style steam
+  const styledStream = createStyleStream(lookup, (style) => {
+      // emit a line to header Stream
+      headerStream.push(createLink(`dist/${style}`));
+      // or
+      headerStream.push(`<link href="dist/${style}" rel="stylesheet">\n`);
+  });
 
-// allow client to start loading js bundle
-res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+  // allow client to start loading js bundle
+  res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
 
-const middleStream = readableString('</head><body><div id="root">');
-const endStream = readableString('</head><body>');
-
-// concatenate all steams together
-const streams = [
-    headerStream, // styles
-    middleStream, // end of a header, and start of a body
-    styledStream, // the main content
-    endStream,    // closing tags
-];
-
-MultiStream(streams).pipe(res);
-
-// start by piping react and styled transform stream
-htmlStream.pipe(styledStream, {end: false});
-htmlStream.on('end', () => {
-    // kill header stream on the main stream end
-    headerStream.push(null);
-    styledStream.end();
-});
+  const middleStream = readableString('</head><body><div id="root">');
+  const endStream = readableString('</head><body>');
+  
+  // concatenate all steams together
+  const streams = [
+      headerStream, // styles
+      middleStream, // end of a header, and start of a body
+      styledStream, // the main content
+      endStream,    // closing tags
+  ];
+  
+  MultiStream(streams).pipe(res);
+  
+  // start by piping react and styled transform stream
+  htmlStream.pipe(styledStream, {end: false});
+  htmlStream.on('end', () => {
+      // kill header stream on the main stream end
+      headerStream.push(null);
+      styledStream.end();
+  });
+}
 ```
 > This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
 from __react-imported-component__.
@@ -152,6 +161,7 @@ import {getProjectStyles, createLink} from 'used-styles';
 import {createStyleStream} from 'used-styles/react';
 import MultiStream from 'multistream';
 
+// .....
 // generate lookup table on server start
 const lookup = await getProjectStyles('./build'); // __dirname usually
 
@@ -166,7 +176,7 @@ const readable = () => {
 const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
 // create a style steam
-const styledStream = createStyleStream(projectStyles, (style) => {
+const styledStream = createStyleStream(lookup, (style) => {
   // _return_ link tag, and it will be appened to the stream output
     return createLink(`dist/${style}`)
 });
