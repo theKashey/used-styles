@@ -11,7 +11,6 @@
 </div>
 
 
-====
 
 
 > Bundler independent CSS part of SSR-friendly code splitting
