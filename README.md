@@ -69,7 +69,7 @@ import {getProjectStyles} from 'used-styles';
 import {getUsedStyles} from 'used-styles/react';
 
 // generate lookup table on server start
-const lookup = getProjectStyles('./build');
+const lookup = await getProjectStyles('./build');
 
 // render App
 const markup = ReactDOM.renderToString(<App />)
