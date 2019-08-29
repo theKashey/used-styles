@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test ast should map simple style 1`] = `
+Object {
+  "bodies": Object {
+    "1": Object {
+      "end": Object {
+        "column": 25,
+        "file": 0,
+        "line": 5,
+      },
+      "id": 1,
+      "rules": Array [
+        Object {
+          "prop": "border",
+          "value": "1px solid",
+        },
+        Object {
+          "prop": "margin",
+          "value": "6px 10px",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "file": 0,
+        "line": 4,
+      },
+    },
+    "2": Object {
+      "end": Object {
+        "column": 33,
+        "file": 0,
+        "line": 11,
+      },
+      "id": 2,
+      "rules": Array [
+        Object {
+          "prop": "display",
+          "value": "block",
+        },
+        Object {
+          "prop": "position",
+          "value": "relative",
+        },
+        Object {
+          "prop": "width",
+          "value": "calc(100% - 10px)",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "file": 0,
+        "line": 9,
+      },
+    },
+    "3": Object {
+      "end": Object {
+        "column": 32,
+        "file": 0,
+        "line": 15,
+      },
+      "id": 3,
+      "rules": Array [
+        Object {
+          "prop": "position",
+          "value": "absolute",
+        },
+      ],
+      "start": Object {
+        "column": 14,
+        "file": 0,
+        "line": 15,
+      },
+    },
+    "4": Object {
+      "end": Object {
+        "column": 32,
+        "file": 0,
+        "line": 16,
+      },
+      "id": 4,
+      "rules": Array [
+        Object {
+          "prop": "position",
+          "value": "relative",
+        },
+      ],
+      "start": Object {
+        "column": 14,
+        "file": 0,
+        "line": 16,
+      },
+    },
+  },
+  "selectors": Array [
+    Object {
+      "declaration": 1,
+      "media": Array [],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+    Object {
+      "declaration": 1,
+      "media": Array [],
+      "pieces": Array [
+        "b",
+        "c",
+      ],
+      "postfix": ".c",
+      "selector": ".b .c",
+    },
+    Object {
+      "declaration": 2,
+      "media": Array [],
+      "pieces": Array [
+        "d",
+        "e",
+      ],
+      "postfix": "~ .e:not(focused)",
+      "selector": ".d ~ .e:not(focused)",
+    },
+    Object {
+      "declaration": 3,
+      "media": Array [
+        "only screen and (max-width: 600px)",
+      ],
+      "pieces": Array [
+        "c",
+      ],
+      "postfix": "",
+      "selector": ".c",
+    },
+    Object {
+      "declaration": 4,
+      "media": Array [
+        "only screen and (max-width: 600px)",
+      ],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+  ],
+}
+`;
+
+exports[`test ast should remap complex style 1`] = `
+".a,
+.b .c { border: 1px solid;
+margin: 6px 10px; }
+
+@media only screen and (max-width: 600px) {
+.c { position: absolute; }
+.a { position: relative; }
+}"
+`;
+
+exports[`test ast should remap simple style 1`] = `
+".d ~ .e:not(focused) { display: block;
+position: relative;
+width: calc(100% - 10px); }
+"
+`;

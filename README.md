@@ -11,10 +11,9 @@
 </div>
 
 
-====
-
-
 > Bundler independent CSS part of SSR-friendly code splitting
+
+Detects used `css` files, and/or inlines critical styles. 
 
 ## Code splitting
 This is all about code splitting, Server Side Rendering and React, even is React has nothing with this library.
@@ -77,11 +76,80 @@ const usedStyles = getUsedStyles(markup, lookup);
 
 usedStyles.forEach(style => {
   const link = `<link href="build/${style}" rel="stylesheet">\n`;
-  // append this link to the header output
+  // append this link to the header output or to the body
 });
+
+// or 
+
+const criticalCSS = getCriticalStyles(markup, lookup);
+// append this link to the header output
 ```
 ### Stream rendering
-Stream rendering is much harder. The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
+Stream rendering is much harder, and much more efficient.
+The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
+
+Stream rendering could be interleaved(more efficient) or block(more predictable).
+
+### Interleaved Stream rendering
+In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
+It's quite similar how StyledComponents works
+```js
+import {getProjectStyles, createLink} from 'used-styles';
+import {createStyleStream} from 'used-styles/react';
+import MultiStream from 'multistream';
+
+// generate lookup table on server start
+const lookup = await getProjectStyles('./build'); // __dirname usually
+
+// small utility for "readable" streams
+const readable = () => {
+  const s = new Readable();
+  s._read = () => true;
+  return s;
+};
+
+// render App
+const htmlStream = ReactDOM.renderToNodeStream(<App />)
+
+// create a style steam
+const styledStream = createStyleStream(projectStyles, (style) => {
+  // _return_ link tag, and it will be appended to the stream output
+    return createLink(`dist/${style}`)
+});
+
+// or create critical CSS stream - it will inline all styles
+const styledStream = createCriticalStyleStream(projectStyles);
+
+// allow client to start loading js bundle
+res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+
+const middleStream = readableString('</head><body><div id="root">');
+const endStream = readableString('</head><body>');
+
+// concatenate all steams together
+const streams = [
+    middleStream, // end of a header, and start of a body
+    styledStream, // the main content
+    endStream,    // closing tags
+];
+
+MultiStream(streams).pipe(res);
+
+// start by piping react and styled transform stream
+htmlStream.pipe(styledStream);
+```
+
+__!! THIS IS NOT THE END !!__ Interleaving links and react output would produce break client side rehydration,
+as long as _injected_ links are not rendered by React, and not expected to present in the "result" HTML code.
+
+You have to move injected styles prior rehydration.
+```js
+import { moveStyles } from 'used-styles/moveStyles';
+```
+
+
+## Block rendering
+> Not sure this is a good idea
 
 Idea is to:
 - push `initial line` to the browser, with `the-main-script` inside
@@ -143,61 +211,6 @@ htmlStream.on('end', () => {
 ```
 > This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
 from __react-imported-component__.
-
-### Interleaved Stream rendering
-In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
-It's quite similar how StyledComponents works
-```js
-import {getProjectStyles, createLink} from 'used-styles';
-import {createStyleStream} from 'used-styles/react';
-import MultiStream from 'multistream';
-
-// generate lookup table on server start
-const lookup = await getProjectStyles('./build'); // __dirname usually
-
-// small utility for "readable" streams
-const readable = () => {
-  const s = new Readable();
-  s._read = () => true;
-  return s;
-};
-
-// render App
-const htmlStream = ReactDOM.renderToNodeStream(<App />)
-
-// create a style steam
-const styledStream = createStyleStream(projectStyles, (style) => {
-  // _return_ link tag, and it will be appened to the stream output
-    return createLink(`dist/${style}`)
-});
-
-// allow client to start loading js bundle
-res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
-
-const middleStream = readableString('</head><body><div id="root">');
-const endStream = readableString('</head><body>');
-
-// concatenate all steams together
-const streams = [
-    // headerStream, // we dont need this stream
-    middleStream, // end of a header, and start of a body
-    styledStream, // the main content
-    endStream,    // closing tags
-];
-
-MultiStream(streams).pipe(res);
-
-// start by piping react and styled transform stream
-htmlStream.pipe(styledStream);
-```
-
-__!! THIS IS NOT THE END !!__ Interleaving links and react output would produce break client side rehydration,
-as long as _injected_ links are not rendered by React, and not expected to present in the "result" HTML code.
-
-You have to move injected styles prior rehydration.
-```js
-import { moveStyles } from 'used-styles/moveStyles';
-```
 
 # Performance
 Almost unmeasurable. It's a simple and single RegExp, which is not comparable to the React Render itself.

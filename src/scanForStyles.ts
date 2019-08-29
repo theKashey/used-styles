@@ -4,26 +4,12 @@ import {extname, relative} from 'path';
 // @ts-ignore
 import scanDirectory from 'scan-directory';
 import {StyleDef, StyleFile, StylesLookupTable} from "./types";
+import {mapStyles} from "./parser/utils";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
 const pReadFile = promisify(readFile);
 export const getFileContent = (file:string) => pReadFile(file, 'utf8');
-
-const mapStyles = (styles: string) => (
-  (
-    styles
-    // remove style body
-      .replace(/({[^{}]+})/g, '$')
-      .replace(/({[^{}]+})/g, '$')
-      // match style name
-      .match(/\.([^>~.,$:{\[\s]+)?/g) || []
-  )
-  // clean style name
-    .map(x => x.replace(/[\s,.>~$]+/, ''))
-    .map(x => x.replace(/[.\s.:]+/, ''))
-);
-
 
 export const remapStyles = (data: StyleFile[], result: StyleDef) => (
   data

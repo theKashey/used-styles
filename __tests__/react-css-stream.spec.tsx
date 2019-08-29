@@ -1,31 +1,36 @@
 import * as React from 'react';
 import {renderToStaticNodeStream} from 'react-dom/server';
 
-import {getUsedStyles, createStyleStream} from "../src/reactCssStream";
+import {getUsedStyles, createStyleStream} from "../src/index";
+import {StylesLookupTable} from "../src/types";
 
 describe('React css stream', () => {
+  const createLookup = (lookup: StylesLookupTable): any => ({
+    lookup
+  });
+
   it('simple map', () => {
     const map = getUsedStyles(
       `<div class="a"><div class="b c d"><div class="f"></div></div>`,
-      {
+      createLookup({
         a: ['1'],
         b: ['2'],
         d: ['3'],
         e: ['4'],
         f: ['5', '6'],
-      }
+      })
     );
     expect(map).toEqual(["1", "2", "3", "5", "6"]);
   });
 
   it('React.renderToStream', async () => {
     const styles = {};
-    const cssStream = createStyleStream({
+    const cssStream = createStyleStream(createLookup({
       a: ['file1'],
       b: ['file1', 'file2'],
       zz: ['file3'],
       notused: ['file4']
-    }, style => {
+    }), style => {
       styles[style] = (styles[style] || 0) + 1;
     });
     const output = renderToStaticNodeStream(
