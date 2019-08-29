@@ -1,29 +1,29 @@
-import {CacheLine, StyleDefinition, UsedTypes} from "../types";
+import {CacheLine, StyleDefinition} from "../types";
 import {Transform} from "stream";
-import {getCriticalStyles} from "../cssStream";
+import {getCriticalStyles} from "../getCSS";
 import {createLine, findLastBrace} from "../utils";
 import {isReact} from "../config";
 
-export const process = (chunk: string, line: CacheLine, def: StyleDefinition, callback: (styles: string) => void): string => (
+export const process = (chunk: string, line: CacheLine, callback: (styles: string) => void): string => (
   isReact()
-    ? processReact(chunk, line, def, callback)
-    : processPlain(chunk, line, def, callback)
+    ? processReact(chunk, line, callback)
+    : processPlain(chunk, line, callback)
 );
 
-export const processPlain = (chunk: string, line: CacheLine, def: StyleDefinition, callback: (styles: string) => void): string => {
+export const processPlain = (chunk: string, line: CacheLine, callback: (styles: string) => void): string => {
   const data = line.tail + chunk;
 
   const lastBrace = findLastBrace(data);
   const usedString = data.substring(0, lastBrace);
 
-  callback(getCriticalStyles(usedString, def));
+  callback(usedString);
 
   line.tail = data.substring(lastBrace);
   return usedString;
 };
 
-export const processReact = (chunk: string, line: CacheLine, def: StyleDefinition, callback: (styles: string) => void): string => {
-  callback(getCriticalStyles(chunk, def));
+export const processReact = (chunk: string, line: CacheLine, callback: (styles: string) => void): string => {
+  callback(chunk);
 
   return chunk;
 };
@@ -32,7 +32,18 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: (string | undefined)[] = [];
 
-  const cb = (style: string) => {
+  const usedSelectors = new Set<string>();
+
+  const filter = (selector: string) => {
+    if (usedSelectors.has(selector)) {
+      return false;
+    }
+    usedSelectors.add(selector);
+    return true;
+  };
+
+  const cb = (content: string) => {
+    const style = getCriticalStyles(content, def, filter);
     style && injections.push(style);
   };
 
@@ -40,7 +51,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
     // transform() is called with each chunk of data
     transform(chunk, _, _callback) {
       injections = [];
-      const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, def, cb), 'utf-8');
+      const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, cb), 'utf-8');
       _callback(
         undefined,
         (injections.length ? `<style>${injections.join('')}</style>` : '') + chunkData,

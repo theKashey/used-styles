@@ -5,6 +5,7 @@ import {getUsedStyles, createStyleStream} from "../src";
 import {StylesLookupTable} from "../src/types";
 
 describe('css stream', () => {
+
   const createLookup = (lookup: StylesLookupTable): any => ({
     lookup
   });

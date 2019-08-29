@@ -1,6 +1,6 @@
 import {CacheLine, StyleDefinition, UsedTypes} from "../types";
 import {Transform} from "stream";
-import {getUsedStyles} from "../cssStream";
+import {getUsedStyles} from "../getCSS";
 import {createLine, findLastBrace} from "../utils";
 import {isReact} from "../config";
 

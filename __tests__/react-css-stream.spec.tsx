@@ -1,13 +1,15 @@
 import * as React from 'react';
 import {renderToStaticNodeStream} from 'react-dom/server';
 
-import {getUsedStyles, createStyleStream} from "../src/index";
+import {getUsedStyles, createStyleStream, setReactOptimization} from "../src";
 import {StylesLookupTable} from "../src/types";
 
 describe('React css stream', () => {
   const createLookup = (lookup: StylesLookupTable): any => ({
     lookup
   });
+
+  beforeEach(() => setReactOptimization());
 
   it('simple map', () => {
     const map = getUsedStyles(

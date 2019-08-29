@@ -24,7 +24,10 @@ export interface StyleBody {
 
 export type StyleBodies = Record<number, StyleBody>;
 
-export interface AST {
+export interface SingleStyleAst {
+  file: string;
   selectors: StyleSelector[];
   bodies: StyleBodies;
 }
+
+export type StyleAst = Record<string, SingleStyleAst>;

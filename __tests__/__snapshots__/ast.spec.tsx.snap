@@ -6,7 +6,6 @@ Object {
     "1": Object {
       "end": Object {
         "column": 25,
-        "file": 0,
         "line": 5,
       },
       "id": 1,
@@ -22,14 +21,12 @@ Object {
       ],
       "start": Object {
         "column": 9,
-        "file": 0,
         "line": 4,
       },
     },
     "2": Object {
       "end": Object {
         "column": 33,
-        "file": 0,
         "line": 11,
       },
       "id": 2,
@@ -49,14 +46,12 @@ Object {
       ],
       "start": Object {
         "column": 9,
-        "file": 0,
         "line": 9,
       },
     },
     "3": Object {
       "end": Object {
         "column": 32,
-        "file": 0,
         "line": 15,
       },
       "id": 3,
@@ -68,14 +63,12 @@ Object {
       ],
       "start": Object {
         "column": 14,
-        "file": 0,
         "line": 15,
       },
     },
     "4": Object {
       "end": Object {
         "column": 32,
-        "file": 0,
         "line": 16,
       },
       "id": 4,
@@ -87,11 +80,11 @@ Object {
       ],
       "start": Object {
         "column": 14,
-        "file": 0,
         "line": 16,
       },
     },
   },
+  "file": "",
   "selectors": Array [
     Object {
       "declaration": 1,

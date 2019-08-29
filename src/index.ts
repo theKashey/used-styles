@@ -1,5 +1,5 @@
-import {getProjectStyles} from './scanForStyles'
-import {getUsedStyles, getCriticalStyles} from './cssStream';
+import {getProjectStyles, scanProjectStyles} from './scanForStyles'
+import {getUsedStyles, getCriticalStyles} from './getCSS';
 import {createStyleStream} from "./reporters/used";
 import {createCriticalStyleStream} from "./reporters/critical";
 
@@ -8,6 +8,7 @@ import {setReactOptimization} from "./config";
 
 export {
   getProjectStyles,
+  scanProjectStyles,
 
   getUsedStyles,
   getCriticalStyles,

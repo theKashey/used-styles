@@ -3,17 +3,19 @@ import {promisify} from 'util';
 import {extname, relative} from 'path';
 // @ts-ignore
 import scanDirectory from 'scan-directory';
-import {StyleDef, StyleFile, StylesLookupTable} from "./types";
+import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable} from "./types";
 import {mapStyles} from "./parser/utils";
+import {buildAst} from "./parser/toAst";
+import {StyleAst} from "./parser/ast";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
 const pReadFile = promisify(readFile);
-export const getFileContent = (file:string) => pReadFile(file, 'utf8');
+export const getFileContent = (file: string) => pReadFile(file, 'utf8');
 
-export const remapStyles = (data: StyleFile[], result: StyleDef) => (
-  data
-    .map(({file, content}) => ({file, styles: mapStyles(content)}))
+export const remapStyles = (data: StyleFiles, result: StyleDef) => (
+  Object.keys(data)
+    .map((file) => ({file, styles: mapStyles(data[file])}))
     .forEach(({file, styles}) => (
       styles.forEach(className => {
         if (!result[className]) {
@@ -33,24 +35,36 @@ const toFlattenArray = (styles: StyleDef): StylesLookupTable => (
     }, {} as StylesLookupTable)
 );
 
-export async function getProjectStyles(rootDir: string): Promise<StylesLookupTable> {
+export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
+  Object
+    .keys(fileDate)
+    .reduce((acc, file) => {
+      acc[file] = buildAst(fileDate[file], file);
+      return acc;
+    }, {} as StyleAst)
+);
+
+export async function scanProjectStyles(data: StyleFiles) {
+  const styles: StyleDef = {};
+  remapStyles(data, styles);
+
+  return {
+    lookup: toFlattenArray(styles),
+    ast: astFromFiles(data),
+  };
+}
+
+export async function getProjectStyles(rootDir: string): Promise<StyleDefinition> {
   const files: string[] =
     (await scanDirectory(rootDir, undefined, () => false))
       .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
 
-  const data: StyleFile[] = await Promise.all(
-    files
-      .map(async function (file) {
-        const content = await getFileContent(file);
-        return {
-          file: relative(rootDir, file),
-          content
-        } as StyleFile
-      })
+  const styleFiles: StyleFiles = {};
+  await Promise.all(
+    files.map(async (file) => {
+      styleFiles[relative(rootDir, file)] = await getFileContent(file);
+    })
   );
 
-  const styles: StyleDef = {};
-  remapStyles(data, styles);
-
-  return toFlattenArray(styles);
+  return scanProjectStyles(styleFiles);
 }

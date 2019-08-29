@@ -1,8 +1,8 @@
 import * as postcss from 'postcss';
 import {AtRule, Rule} from 'postcss';
-import {createRange, localRangeMax, localRangeMin, CodeLocation, rangesIntervalEqual} from "./ranges";
+import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./ranges";
 import {mapStyles} from "./utils";
-import {AST, StyleBodies, StyleBody, StyleSelector} from "./ast";
+import {SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
 
 const getAtRule = (rule: AtRule | Rule) => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name == 'media') {
@@ -43,7 +43,7 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
   return decl;
 };
 
-export const buildAst = (CSS: string, file: number = 0): AST => {
+export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
 
@@ -85,8 +85,8 @@ export const buildAst = (CSS: string, file: number = 0): AST => {
         const delc: StyleBody = {
           id: NaN,
           rules: [],
-          start: createRange(file, Infinity, Infinity),
-          end: createRange(file, 0, 0),
+          start: createRange(Infinity, Infinity),
+          end: createRange(0, 0),
         };
         rule.walkDecls(({prop, value, source}) => {
           delc.start = localRangeMin(delc.start, source.start);
@@ -102,6 +102,7 @@ export const buildAst = (CSS: string, file: number = 0): AST => {
   });
 
   return {
+    file,
     selectors,
     bodies,
   };

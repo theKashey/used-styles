@@ -68,11 +68,13 @@ import {getProjectStyles} from 'used-styles';
 import {getUsedStyles} from 'used-styles/react';
 
 // generate lookup table on server start
-const lookup = getProjectStyles('./build');
+const stylesLookup = getProjectStyles('./build');
 
-// render App
-const markup = ReactDOM.renderToString(<App />)
-const usedStyles = getUsedStyles(markup, lookup);
+async function MyRender () {
+  const lookup = await stylesLookup;// it was a promise
+  // render App
+  const markup = ReactDOM.renderToString(<App />)
+  const usedStyles = getUsedStyles(markup, lookup);
 
 usedStyles.forEach(style => {
   const link = `<link href="build/${style}" rel="stylesheet">\n`;
@@ -99,7 +101,7 @@ import {createStyleStream} from 'used-styles/react';
 import MultiStream from 'multistream';
 
 // generate lookup table on server start
-const lookup = await getProjectStyles('./build'); // __dirname usually
+const stylesLookup = getProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
 const readable = () => {
@@ -108,27 +110,29 @@ const readable = () => {
   return s;
 };
 
-// render App
-const htmlStream = ReactDOM.renderToNodeStream(<App />)
+async function MyRender() {
+  // render App
+  const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
-// create a style steam
-const styledStream = createStyleStream(projectStyles, (style) => {
+  const lookup = await stylesLookup;
+  // create a style steam
+  const styledStream = createStyleStream(lookup, (style) => {
   // _return_ link tag, and it will be appended to the stream output
-    return createLink(`dist/${style}`)
+      return createLink(`dist/${style}`)
 });
 
 // or create critical CSS stream - it will inline all styles
 const styledStream = createCriticalStyleStream(projectStyles);
 
-// allow client to start loading js bundle
-res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+  // allow client to start loading js bundle
+  res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
 
-const middleStream = readableString('</head><body><div id="root">');
-const endStream = readableString('</head><body>');
-
-// concatenate all steams together
-const streams = [
-    middleStream, // end of a header, and start of a body
+  const middleStream = readableString('</head><body><div id="root">');
+  const endStream = readableString('</head><body>');
+  
+  // concatenate all steams together
+  const streams = [
+      middleStream, // end of a header, and start of a body
     styledStream, // the main content
     endStream,    // closing tags
 ];
@@ -144,7 +148,8 @@ as long as _injected_ links are not rendered by React, and not expected to prese
 
 You have to move injected styles prior rehydration.
 ```js
-import { moveStyles } from 'used-styles/moveStyles';
+  import { moveStyles } from 'used-styles/moveStyles';
+}
 ```
 
 
@@ -164,6 +169,7 @@ It's possible to interleave them, but that's is not expected buy a `hydrate`.
 import {getProjectStyles, createStyleStream, createLink} from 'used-styles';
 import MultiStream from 'multistream';
 
+// .....
 // generate lookup table on server start
 const lookup = await getProjectStyles('./build'); // __dirname usually
 
@@ -178,7 +184,7 @@ const readable = () => {
 const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
 // create a style steam
-const styledStream = createStyleStream(projectStyles, (style) => {
+const styledStream = createStyleStream(lookup, (style) => {
     // emit a line to header Stream
     headerStream.push(createLink(`dist/${style}`));
     // or

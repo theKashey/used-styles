@@ -1,4 +1,4 @@
-import {AST, StyleBody, StyleRule, StyleSelector} from "./ast";
+import {SingleStyleAst, StyleBody, StyleRule, StyleSelector} from "./ast";
 
 let separator = process.env.NODE_ENV === 'production' ? '' : '\n';
 
@@ -43,18 +43,16 @@ const findMatchingSelectors = (selector: string, selectors: StyleSelector[]): St
   selectors.filter(rule => isMatching(selector, rule))
 );
 
-export const fromAst = (rules: string[], {selectors, bodies}: AST) => {
+export const fromAst = (rules: string[], {selectors, bodies}: SingleStyleAst, filter?: (selector: string) => boolean) => {
 
   const blocks: StyleSelector[] = [];
 
   rules.forEach(rule => {
-    blocks.push(...findMatchingSelectors(rule, selectors));
+    blocks.push(
+      ...findMatchingSelectors(rule, selectors)
+        .filter(block => !filter || filter(block.selector))
+    );
   });
-
-  console.log(bodies);
-
-  console.log(blocks);
-  console.log(blocks.map(r => bodies[r.declaration]));
 
   blocks.sort((ruleA, ruleB) => bodies[ruleA.declaration].id - bodies[ruleB.declaration].id);
 
