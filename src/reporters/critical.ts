@@ -54,7 +54,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
       const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, cb), 'utf-8');
       _callback(
         undefined,
-        (injections.length ? `<style>${injections.join('')}</style>` : '') + chunkData,
+        injections.join('') + chunkData,
       );
     },
 

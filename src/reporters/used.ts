@@ -39,7 +39,10 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
       .forEach(style => {
         if (!styles[style]) {
           styles[style] = true;
-          injections.push(callback(style));
+          const result = callback(style);
+          if(result) {
+            injections.push(result);
+          }
         }
       })
   };

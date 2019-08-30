@@ -4,7 +4,7 @@ import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./
 import {mapStyles} from "./utils";
 import {SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
 
-const getAtRule = (rule: AtRule | Rule) => {
+const getAtRule = (rule: AtRule | Rule):string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name == 'media') {
     return getAtRule(rule.parent as any).concat(rule.parent.params);
   }
@@ -46,26 +46,6 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
 export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
-
-  root.walkAtRules(rule => {
-    if (rule.name !== 'media') {
-      const topName = rule.name;
-
-      const Rule = {
-        rule: rule,
-        selector: '@' + rule.name + ' ' + rule.params,
-        isGlobal: true,
-        media: getAtRule(rule),
-        decl: []
-      };
-      rule.walkDecls(delc => {
-        Rule.decl.push(delc);
-      });
-      const sel = selectors[topName] || [];
-      sel.push(Rule);
-      selectors[topName] = sel;
-    }
-  });
 
   const bodies: StyleBodies = {};
 

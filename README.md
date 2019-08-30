@@ -149,9 +149,13 @@ as long as _injected_ links are not rendered by React, and not expected to prese
 You have to move injected styles prior rehydration.
 ```js
   import { moveStyles } from 'used-styles/moveStyles';
-}
+  moveStyles();
 ```
-
+You might want to remove styles after rehydration to prevent duplication.
+```js
+  import { removeStyles } from 'used-styles/moveStyles';
+  removeStyles(); 
+```
 
 ## Block rendering
 > Not sure this is a good idea

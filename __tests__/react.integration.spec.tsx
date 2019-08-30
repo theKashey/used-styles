@@ -6,19 +6,23 @@ import {
   createCriticalStyleStream,
   createStyleStream,
   scanProjectStyles,
-  createLink
+  createLink, getCriticalStyles
 } from "../src";
 
 describe('React css critical stream', () => {
 
   const file1 = `
-    .a, .b, input { color: right }
+    .a, .b, input { color: rightColor }
     .a2, .b1, input { color: wrong }
   `;
 
   const file2 = `
     .c2, .d1, input { marker: wrong }
-    .c, .d { marker: blue }
+    .c, .d { marker: blueMark }
+  `;
+
+  const file3 = `
+    .somethingOdd { marker: wrong }    
   `;
 
   let lookup: any;
@@ -27,6 +31,7 @@ describe('React css critical stream', () => {
     lookup = await scanProjectStyles({
       file1,
       file2,
+      file3,
     });
   });
 
@@ -58,16 +63,31 @@ describe('React css critical stream', () => {
       return result.join('');
     };
 
-    const htmlCritical_a =  streamString(output.pipe(criticalStream));
-    const htmlLink_a =  streamString(output.pipe(cssStream));
+    const htmlCritical_a = streamString(output.pipe(criticalStream));
+    const htmlLink_a = streamString(output.pipe(cssStream));
+    const html_a = streamString(output);
 
+    const html = await html_a;
     const htmlCritical = await htmlCritical_a;
     const htmlLink = await htmlLink_a;
 
+    expect(html).toMatch(/datacontent/);
     expect(htmlCritical).toMatch(/datacontent/);
     expect(htmlLink).toMatch(/datacontent/);
 
+    expect(htmlCritical).toMatch(/rightColor/);
+    expect(htmlCritical).toMatch(/blueMark/);
+    expect(htmlCritical).not.toMatch(/wrong/);
+
+    expect(htmlLink).toMatch(/file1/);
+    expect(htmlLink).toMatch(/file2/);
+    expect(htmlLink).not.toMatch(/file3/);
+
     expect(htmlCritical).toMatchSnapshot();
-   expect(htmlLink).toMatchSnapshot();
+    expect(htmlLink).toMatchSnapshot();
+
+    const critical = getCriticalStyles(html, lookup);
+
+    expect(critical).toMatchSnapshot();
   })
 });

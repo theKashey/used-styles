@@ -1,6 +1,5 @@
-import {CacheLine, StyleDefinition, StylesLookupTable, UsedTypes} from "./types";
+import {CacheLine} from "./types";
 import {isReact} from "./config";
-import {getUsedStyles} from "./cssStream";
 
 export const findLastBrace = (data: string): number => {
   let fromIndex = 0;

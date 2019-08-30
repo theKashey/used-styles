@@ -16,9 +16,9 @@ const declsToString = (rules: StyleRule[]) =>
     .map(decl => createDecl(decl))
     .join(separator);
 
-const getMedia = ({media}) => {
-  const prefix = [];
-  const postfix = [];
+const getMedia = ({media}: { media: string[] }) => {
+  const prefix: string[] = [];
+  const postfix: string[] = [];
 
   media.forEach(media => {
     prefix.push(`@media ${media} {`);
@@ -56,7 +56,7 @@ export const fromAst = (rules: string[], {selectors, bodies}: SingleStyleAst, fi
 
   blocks.sort((ruleA, ruleB) => bodies[ruleA.declaration].id - bodies[ruleB.declaration].id);
 
-  const result = [];
+  const result: string[] = [];
 
   let lastMedia = ['', ''];
   blocks.forEach((block, index) => {
