@@ -1,0 +1,17 @@
+html {
+    color: htmlRED;
+}
+
+input {
+    display: none;
+}
+
+.someclass {
+    position: absolute;
+    content: "data-from-file1";
+}
+
+.someOtherClass {
+    position: absolute;
+    content: "data-wrong-file1";
+}

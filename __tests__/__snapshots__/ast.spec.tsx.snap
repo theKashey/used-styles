@@ -1,0 +1,256 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test ast should handle keyframes and media 1`] = `
+Object {
+  "atRules": Array [
+    Object {
+      "css": "@-webkit-keyframes ANIMATION_NAME{
+      0%{-webkit-transform:rotate(0deg);}
+      to{-webkit-transform:rotate(359deg);}}",
+      "id": "ANIMATION_NAME",
+      "kind": "-webkit-keyframes",
+    },
+    Object {
+      "css": "@keyframes ANIMATION_NAME{
+      0%{-webkit-transform:rotate(0deg);}
+      to{-webkit-transform:rotate(359deg);}
+    }",
+      "id": "ANIMATION_NAME",
+      "kind": "keyframes",
+    },
+  ],
+  "bodies": Object {},
+  "file": "",
+  "selectors": Array [],
+}
+`;
+
+exports[`test ast should map simple style 1`] = `
+Object {
+  "atRules": Array [],
+  "bodies": Object {
+    "1": Object {
+      "end": Object {
+        "column": 25,
+        "line": 5,
+      },
+      "id": 1,
+      "rules": Array [
+        Object {
+          "prop": "border",
+          "value": "1px solid",
+        },
+        Object {
+          "prop": "margin",
+          "value": "6px 10px",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "line": 4,
+      },
+    },
+    "2": Object {
+      "end": Object {
+        "column": 33,
+        "line": 11,
+      },
+      "id": 2,
+      "rules": Array [
+        Object {
+          "prop": "display",
+          "value": "block",
+        },
+        Object {
+          "prop": "position",
+          "value": "relative",
+        },
+        Object {
+          "prop": "width",
+          "value": "calc(100% - 10px)",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "line": 9,
+      },
+    },
+    "3": Object {
+      "end": Object {
+        "column": 32,
+        "line": 15,
+      },
+      "id": 3,
+      "rules": Array [
+        Object {
+          "prop": "position",
+          "value": "absolute",
+        },
+      ],
+      "start": Object {
+        "column": 14,
+        "line": 15,
+      },
+    },
+    "4": Object {
+      "end": Object {
+        "column": 32,
+        "line": 16,
+      },
+      "id": 4,
+      "rules": Array [
+        Object {
+          "prop": "position",
+          "value": "relative",
+        },
+      ],
+      "start": Object {
+        "column": 14,
+        "line": 16,
+      },
+    },
+    "5": Object {
+      "end": Object {
+        "column": 39,
+        "line": 19,
+      },
+      "id": 5,
+      "rules": Array [
+        Object {
+          "prop": "color",
+          "value": "rightColor",
+        },
+      ],
+      "start": Object {
+        "column": 23,
+        "line": 19,
+      },
+    },
+    "6": Object {
+      "end": Object {
+        "column": 18,
+        "line": 22,
+      },
+      "id": 6,
+      "rules": Array [
+        Object {
+          "prop": "color",
+          "value": "red",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "line": 22,
+      },
+    },
+  },
+  "file": "",
+  "selectors": Array [
+    Object {
+      "declaration": 1,
+      "media": Array [],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+    Object {
+      "declaration": 1,
+      "media": Array [],
+      "pieces": Array [
+        "c",
+      ],
+      "postfix": ".c",
+      "selector": ".b .c",
+    },
+    Object {
+      "declaration": 2,
+      "media": Array [],
+      "pieces": Array [
+        "e",
+      ],
+      "postfix": "~ .e:not(focused)",
+      "selector": ".d ~ .e:not(focused)",
+    },
+    Object {
+      "declaration": 3,
+      "media": Array [
+        "only screen and (max-width: 600px)",
+      ],
+      "pieces": Array [
+        "c",
+      ],
+      "postfix": "",
+      "selector": ".c",
+    },
+    Object {
+      "declaration": 4,
+      "media": Array [
+        "only screen and (max-width: 600px)",
+      ],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [
+        "b",
+      ],
+      "postfix": "",
+      "selector": ".b",
+    },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [],
+      "postfix": "",
+      "selector": "input",
+    },
+    Object {
+      "declaration": 6,
+      "media": Array [],
+      "pieces": Array [
+        "dou",
+        "ble",
+      ],
+      "postfix": "",
+      "selector": ".dou.ble",
+    },
+  ],
+}
+`;
+
+exports[`test ast should remap complex style 1`] = `
+".a,
+.b .c { border: 1px solid;
+margin: 6px 10px; }
+
+@media only screen and (max-width: 600px) {
+.c { position: absolute; }
+.a { position: relative; }
+}
+
+.a { color: rightColor; }
+"
+`;
+
+exports[`test ast should remap simple style 1`] = `
+".d ~ .e:not(focused) { display: block;
+position: relative;
+width: calc(100% - 10px); }
+"
+`;

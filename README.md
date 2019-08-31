@@ -1,7 +1,7 @@
 <div align="center">
   <h1>used-style</h1>
   <br/>
-  Get all the styled you have used to render a page. 
+  Get all the styles, you have used to render a page. 
   <br/>
   <br/>
   
@@ -11,9 +11,10 @@
 </div>
 
 
+> Bundler and framework independent CSS part of SSR-friendly code splitting
 
-
-> Bundler independent CSS part of SSR-friendly code splitting
+Detects used `css` files from the output HTML, and/or __inlines critical styles__.
+Supports sync or __stream__ rendering. 
 
 ## Code splitting
 This is all about code splitting, Server Side Rendering and React, even is React has nothing with this library.
@@ -42,67 +43,101 @@ Bonus: Do the same for streams.
 
 Bonus: Do it only for `used styled`, not just imported somewhere. 
 
+## Limitation
+In the performance sake `used-styles` inlines a bit more styles than it should - 
+it's just harder to understand what shall be done.
+- inlines all `@keyframe` animations
+- inlines all `html, body` and other simple selectors (aka css-reset)
+- inlines all rules matching last part of a selector
+
+### Speed
+>Speed, I am speed!
+
+For the 516kb page, which needs 80ms to renderToString resulting time for `getCriticalRules`(very expensive operation)
+would be around __4ms__.
+
+> And, hopefully
+
+- inlines all classes used in HTML code
+
 # API
 ## Discovery API
 Use to scan your `dist` folder to create a look up table between classNames and files they are described in.
 
-1. `getProjectStyles(buildDirrectory)` - generates class lookup table
+1. `discoverProjectStyles(buildDirrectory, filter): StyleDef` - generates class lookup table
+> you may use the second argument to control which files should be scanned
 
 ## Scanners
 Use to get used styled from render result or a stream
 
-2. `getUsedStyles(html): string[]` - returns all used files
-3. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream.
+2. `getUsedStyles(html, StyleDef): string[]` - returns all used files, you have to import them
+3. `getCriticalStyles(html, StyleDef) : string` - returns all used selectors and other applicable rules, wrapped with `style`
+4. `getCriticalRules(html, StyleDef): string` - the same, but without `<style>` tag
+
+5. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<links`
+5. `createCriticalStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<styles`.
 
 ### React
-There is absolutely the same scanners, but for `React`. Basically it's a simpler version of original scanner,
-which rely on the "correct" HTML emitted from React, and just __twice faster__.
+There are only two things about react:
+1. to inline critical styles use another helper - `getCriticalRules` which does not wrap result with `style` letting you do it
+```js
+import {getCriticalRules} from 'used-styles';
+const Header = () => (
+   <style 
+       data-used-styles 
+       dangerouslySetInnerHTML={{__html:getCriticalRules(markup, styleData)}}
+   />
+)
+```
+2. React produces more _valid_ code, and you might enable optimistic optimization, making used-styles a bit faster.
+```js
+import {enableReactOptimization} from 'used-styles';
+
+enableReactOptimization(); // 
+```
 
 # Example
 ## Static rendering
 There is nothing interesting here - just render, just `getUsedStyles`.
 ```js
-import {getProjectStyles, getUsedStyles} from 'used-styles';
-// or
-import {getProjectStyles} from 'used-styles';
-import {getUsedStyles} from 'used-styles/react';
+import {discoverProjectStyles, getUsedStyles} from 'used-styles';
+
 
 // generate lookup table on server start
-const stylesLookup = getProjectStyles('./build');
+const stylesLookup = discoverProjectStyles('./build');
 
 async function MyRender () {
-  const lookup = await stylesLookup;// it was a promise
+  await stylesLookup;// it is "thenable"
   // render App
   const markup = ReactDOM.renderToString(<App />)
-  const usedStyles = getUsedStyles(markup, lookup);
+  const usedStyles = getUsedStyles(markup, stylesLookup);
 
-  usedStyles.forEach(style => {
-    const link = `<link href="build/${style}" rel="stylesheet">\n`;
-    // append this link to the header output
-  });
-}
+usedStyles.forEach(style => {
+  const link = `<link href="build/${style}" rel="stylesheet">\n`;
+  // append this link to the header output or to the body
+});
 
-// don't forget to call
-MyRender();
+// or 
+
+const criticalCSS = getCriticalStyles(markup, stylesLookup);
+// append this link to the header output
 ```
 ### Stream rendering
-Stream rendering is much harder. The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
+Stream rendering is much harder, and much more efficient.
+The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
 
-Idea is to:
-- push `initial line` to the browser, with `the-main-script` inside
-- push all used `styles`
-- push some `html` between `styles` and `content`
-- push `content`
-- push `closing` tags
+Stream rendering could be interleaved(more efficient) or block(more predictable).
 
-That's all are streams, concatenated in a right order.
-It's possible to interleave them, but that's is not expected buy a `hydrate`. 
+### Interleaved Stream rendering
+In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
+It's quite similar how StyledComponents works
 ```js
-import {getProjectStyles, createStyleStream, createLink} from 'used-styles';
+import {discoverProjectStyles, createLink} from 'used-styles';
+import {createStyleStream} from 'used-styles/react';
 import MultiStream from 'multistream';
 
 // generate lookup table on server start
-const stylesLookup = getProjectStyles('./build'); // __dirname usually
+const stylesLookup = discoverProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
 const readable = () => {
@@ -118,11 +153,12 @@ async function MyRender() {
   const lookup = await stylesLookup;
   // create a style steam
   const styledStream = createStyleStream(lookup, (style) => {
-      // emit a line to header Stream
-      headerStream.push(createLink(`dist/${style}`));
-      // or
-      headerStream.push(`<link href="dist/${style}" rel="stylesheet">\n`);
-  });
+  // _return_ link tag, and it will be appended to the stream output
+      return createLink(`dist/${style}`)
+});
+
+// or create critical CSS stream - it will inline all styles
+const styledStream = createCriticalStyleStream(projectStyles);
 
   // allow client to start loading js bundle
   res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
@@ -132,64 +168,7 @@ async function MyRender() {
   
   // concatenate all steams together
   const streams = [
-      headerStream, // styles
       middleStream, // end of a header, and start of a body
-      styledStream, // the main content
-      endStream,    // closing tags
-  ];
-  
-  MultiStream(streams).pipe(res);
-  
-  // start by piping react and styled transform stream
-  htmlStream.pipe(styledStream, {end: false});
-  htmlStream.on('end', () => {
-      // kill header stream on the main stream end
-      headerStream.push(null);
-      styledStream.end();
-  });
-}
-```
-> This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
-from __react-imported-component__.
-
-### Interleaved Stream rendering
-In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
-It's quite similar how StyledComponents works
-```js
-import {getProjectStyles, createLink} from 'used-styles';
-import {createStyleStream} from 'used-styles/react';
-import MultiStream from 'multistream';
-
-// .....
-// generate lookup table on server start
-const lookup = await getProjectStyles('./build'); // __dirname usually
-
-// small utility for "readable" streams
-const readable = () => {
-  const s = new Readable();
-  s._read = () => true;
-  return s;
-};
-
-// render App
-const htmlStream = ReactDOM.renderToNodeStream(<App />)
-
-// create a style steam
-const styledStream = createStyleStream(lookup, (style) => {
-  // _return_ link tag, and it will be appened to the stream output
-    return createLink(`dist/${style}`)
-});
-
-// allow client to start loading js bundle
-res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
-
-const middleStream = readableString('</head><body><div id="root">');
-const endStream = readableString('</head><body>');
-
-// concatenate all steams together
-const streams = [
-    // headerStream, // we dont need this stream
-    middleStream, // end of a header, and start of a body
     styledStream, // the main content
     endStream,    // closing tags
 ];
@@ -205,8 +184,79 @@ as long as _injected_ links are not rendered by React, and not expected to prese
 
 You have to move injected styles prior rehydration.
 ```js
-import { moveStyles } from 'used-styles/moveStyles';
+  import { moveStyles } from 'used-styles/moveStyles';
+  moveStyles();
 ```
+You might want to remove styles after rehydration to prevent duplication.
+```js
+  import { removeStyles } from 'used-styles/moveStyles';
+  removeStyles(); 
+```
+
+## Block rendering
+> Not sure this is a good idea
+
+Idea is to:
+- push `initial line` to the browser, with `the-main-script` inside
+- push all used `styles`
+- push some `html` between `styles` and `content`
+- push `content`
+- push `closing` tags
+
+That's all are streams, concatenated in a right order.
+It's possible to interleave them, but that's is not expected buy a `hydrate`. 
+```js
+import {discoverProjectStyles, createStyleStream, createLink} from 'used-styles';
+import MultiStream from 'multistream';
+
+// .....
+// generate lookup table on server start
+const lookup = await discoverProjectStyles('./build'); // __dirname usually
+
+// small utility for "readable" streams
+const readable = () => {
+  const s = new Readable();
+  s._read = () => true;
+  return s;
+};
+
+// render App
+const htmlStream = ReactDOM.renderToNodeStream(<App />)
+
+// create a style steam
+const styledStream = createStyleStream(lookup, (style) => {
+    // emit a line to header Stream
+    headerStream.push(createLink(`dist/${style}`));
+    // or
+    headerStream.push(`<link href="dist/${style}" rel="stylesheet">\n`);
+});
+
+// allow client to start loading js bundle
+res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+
+const middleStream = readableString('</head><body><div id="root">');
+const endStream = readableString('</head><body>');
+
+// concatenate all steams together
+const streams = [
+    headerStream, // styles
+    middleStream, // end of a header, and start of a body
+    styledStream, // the main content
+    endStream,    // closing tags
+];
+
+MultiStream(streams).pipe(res);
+
+// start by piping react and styled transform stream
+htmlStream.pipe(styledStream, {end: false});
+htmlStream.on('end', () => {
+    // kill header stream on the main stream end
+    headerStream.push(null);
+    styledStream.end();
+});
+```
+> This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
+from __react-imported-component__.
 
 # Performance
 Almost unmeasurable. It's a simple and single RegExp, which is not comparable to the React Render itself.

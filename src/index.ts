@@ -1,12 +1,23 @@
-import {getProjectStyles} from './scanForStyles'
-import {getUsedStyles, createStyleStream} from './cssStream';
-import {createLink} from './createLink'
+import {discoverProjectStyles, parseProjectStyles} from './scanForStyles'
+import {getUsedStyles, getCriticalStyles, getCriticalRules} from './getCSS';
+import {createStyleStream} from "./reporters/used";
+import {createCriticalStyleStream} from "./reporters/critical";
+
+import {createLink} from './createLink';
+import {enableReactOptimization} from "./config";
 
 export {
-  getProjectStyles,
+  discoverProjectStyles,
+  parseProjectStyles,
 
   getUsedStyles,
-  createStyleStream,
+  getCriticalStyles,
+  getCriticalRules,
 
-  createLink
+  createStyleStream,
+  createCriticalStyleStream,
+
+  createLink,
+
+  enableReactOptimization,
 }

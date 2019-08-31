@@ -4,11 +4,10 @@ import {remapStyles} from "../src/scanForStyles";
 describe('scanForStyles', () => {
   it('should map simple style', () => {
     const styles = {};
-    remapStyles(
-      [
-        {file: 'a', content: '.a{}, .b .c{}, .d>.e:not(focused){}'},
-        {file: 'b', content: '.a {}, .f~.g{}'},
-      ],
+    remapStyles({
+        'a': '.a{}, .b .c{}, .d>.e:not(focused){}',
+        'b': '.a {}, .f~.g{}, @media (screen) { .media { } }',
+      },
       styles
     );
     expect(styles).toEqual({

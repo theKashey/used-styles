@@ -3,31 +3,20 @@ import {promisify} from 'util';
 import {extname, relative} from 'path';
 // @ts-ignore
 import scanDirectory from 'scan-directory';
-import {StyleDef, StyleFile, StylesLookupTable} from "./types";
+import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable} from "./types";
+import {mapStyles} from "./parser/utils";
+import {buildAst} from "./parser/toAst";
+import {StyleAst} from "./parser/ast";
+import {sortObjectKeys} from "./utils";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
 const pReadFile = promisify(readFile);
-export const getFileContent = (file:string) => pReadFile(file, 'utf8');
+export const getFileContent = (file: string) => pReadFile(file, 'utf8');
 
-const mapStyles = (styles: string) => (
-  (
-    styles
-    // remove style body
-      .replace(/({[^{}]+})/g, '$')
-      .replace(/({[^{}]+})/g, '$')
-      // match style name
-      .match(/\.([^>~.,$:{\[\s]+)?/g) || []
-  )
-  // clean style name
-    .map(x => x.replace(/[\s,.>~$]+/, ''))
-    .map(x => x.replace(/[.\s.:]+/, ''))
-);
-
-
-export const remapStyles = (data: StyleFile[], result: StyleDef) => (
-  data
-    .map(({file, content}) => ({file, styles: mapStyles(content)}))
+export const remapStyles = (data: StyleFiles, result: StyleDef) => (
+  Object.keys(data)
+    .map((file) => ({file, styles: mapStyles(data[file])}))
     .forEach(({file, styles}) => (
       styles.forEach(className => {
         if (!result[className]) {
@@ -38,33 +27,87 @@ export const remapStyles = (data: StyleFile[], result: StyleDef) => (
     )
 );
 
-const toFlattenArray = (styles: StyleDef): StylesLookupTable => (
+const toFlattenArray = (ast: StyleAst): StylesLookupTable => (
   Object
-    .keys(styles)
-    .reduce((acc, style) => {
-      acc[style] = Object.keys(styles[style]);
+    .keys(ast)
+    .reduce((acc, file) => {
+      ast[file].selectors.forEach((sel) => {
+        sel.pieces.forEach(className => {
+          if (!acc[className]) {
+            acc[className] = [];
+          }
+          acc[className].push(file);
+        });
+      });
       return acc;
     }, {} as StylesLookupTable)
 );
 
-export async function getProjectStyles(rootDir: string): Promise<StylesLookupTable> {
-  const files: string[] =
-    (await scanDirectory(rootDir, undefined, () => false))
-      .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
+  Object
+    .keys(fileDate)
+    .reduce((acc, file) => {
+      acc[file] = buildAst(fileDate[file], file);
+      return acc;
+    }, {} as StyleAst)
+);
 
-  const data: StyleFile[] = await Promise.all(
-    files
-      .map(async function (file) {
-        const content = await getFileContent(file);
-        return {
-          file: relative(rootDir, file),
-          content
-        } as StyleFile
+export function parseProjectStyles(data: StyleFiles) {
+  const ast = astFromFiles(sortObjectKeys(data));
+
+  return {
+    isReady: true,
+    lookup: toFlattenArray(ast),
+    ast,
+  };
+}
+
+export const getProjectStyles = () => {
+  throw new Error('use `discoverProjectStyles` instead of getProjectStyles');
+};
+
+const passAll = () => true;
+
+export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: string) => boolean = passAll): StyleDefinition {
+  let resolve: any;
+  let reject: any;
+  const awaiter = new Promise<void>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  const result: StyleDefinition = {
+    isReady: false,
+    then(res, rej) {
+      return awaiter.then(res, rej);
+    }
+  } as StyleDefinition;
+
+  async function scanner() {
+    const files: string[] =
+      (await scanDirectory(rootDir, undefined, () => false))
+        .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0 && fileFilter(name));
+
+    const styleFiles: StyleFiles = {};
+    await Promise.all(
+      files.map(async (file) => {
+        styleFiles[relative(rootDir, file)] = await getFileContent(file);
       })
+    );
+
+    return parseProjectStyles(styleFiles);
+  }
+
+  scanner().then(
+    styles => {
+      Object.assign(result, styles);
+      resolve();
+    }, e => {
+      reject(e);
+      console.error(e);
+      throw new Error('used-styles failed to start');
+    }
   );
 
-  const styles: StyleDef = {};
-  remapStyles(data, styles);
-
-  return toFlattenArray(styles);
+  return result;
 }
