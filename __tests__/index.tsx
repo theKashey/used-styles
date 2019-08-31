@@ -6,7 +6,7 @@ describe('scanForStyles', () => {
     const styles = {};
     remapStyles({
         'a': '.a{}, .b .c{}, .d>.e:not(focused){}',
-        'b': '.a {}, .f~.g{}',
+        'b': '.a {}, .f~.g{}, @media (screen) { .media { } }',
       },
       styles
     );

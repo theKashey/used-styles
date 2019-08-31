@@ -1,3 +1,4 @@
+import * as postcss from 'postcss';
 import {SingleStyleAst, StyleBody, StyleRule, StyleSelector} from "./ast";
 
 let separator = process.env.NODE_ENV === 'production' ? '' : '\n';
@@ -8,7 +9,7 @@ export const escapeValue = (value: string, name: string) => {
 };
 
 const createDecl = (decl: StyleRule) => (
-  decl.prop + ': ' + escapeValue(decl.value, decl.prop) + ';'
+  postcss.decl(decl) + ';'
 );
 
 const declsToString = (rules: StyleRule[]) =>
@@ -30,18 +31,19 @@ const getMedia = ({media}: { media: string[] }) => {
   ]
 };
 
+type SelectorLookUp = Set<string>;
 
 const renderRule = (rule: StyleSelector, style: StyleBody) => (
   `${rule.selector} { ${declsToString(style.rules)} }`
 );
 
-const isMatching = (selector: string, rule: StyleSelector) => (
+const isMatching = (rule: StyleSelector, rules: SelectorLookUp) => (
   rule.pieces.length > 0 &&
-  rule.pieces.some(piece => piece === selector)
+  rule.pieces.every(piece => rules.has(piece))
 );
 
-const findMatchingSelectors = (selector: string, selectors: StyleSelector[]): StyleSelector[] => (
-  selectors.filter(rule => isMatching(selector, rule))
+const findMatchingSelectors = (rules: SelectorLookUp, selectors: StyleSelector[]): StyleSelector[] => (
+  selectors.filter(rule => isMatching(rule, rules))
 );
 
 const findUnmatchableSelectors = (selectors: StyleSelector[]): StyleSelector[] => (
@@ -51,13 +53,12 @@ const findUnmatchableSelectors = (selectors: StyleSelector[]): StyleSelector[] =
 export const fromAst = (rules: string[], def: SingleStyleAst, filter?: (selector: string) => boolean) => {
 
   const blocks: StyleSelector[] = [];
+  const lookup: SelectorLookUp = new Set(rules);
 
-  rules.forEach(rule => {
-    blocks.push(
-      ...findMatchingSelectors(rule, def.selectors)
-        .filter(block => !filter || filter(block.selector))
-    );
-  });
+  blocks.push(
+    ...findMatchingSelectors(lookup, def.selectors)
+      .filter(block => !filter || filter(block.selector))
+  );
 
   return convertToString(blocks, def);
 };
@@ -68,7 +69,13 @@ export const getUnmatchableRules = (def: SingleStyleAst, filter?: (selector: str
 );
 
 export const extractUnmatchable = (def: SingleStyleAst, filter?: (selector: string) => boolean) => (
-  convertToString(getUnmatchableRules(def, filter), def)
+  convertToString(getUnmatchableRules(def, filter), def) + getAtRules(def)
+);
+
+const getAtRules = (def: SingleStyleAst) => (
+  def
+    .atRules
+    .reduce((acc, rule) => acc + rule.css, '')
 );
 
 export const convertToString = (blocks: StyleSelector[], {bodies}: SingleStyleAst) => {

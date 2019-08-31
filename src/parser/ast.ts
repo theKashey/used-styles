@@ -24,10 +24,19 @@ export interface StyleBody {
 
 export type StyleBodies = Record<number, StyleBody>;
 
+export interface AtRule {
+  kind: string;
+  id: string;
+  css: string;
+}
+
+export type AtRules = AtRule[];
+
 export interface SingleStyleAst {
   file: string;
   selectors: StyleSelector[];
   bodies: StyleBodies;
+  atRules: AtRules;
 }
 
 export type StyleAst = Record<string, SingleStyleAst>;

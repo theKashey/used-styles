@@ -7,6 +7,7 @@ import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable} from "./types"
 import {mapStyles} from "./parser/utils";
 import {buildAst} from "./parser/toAst";
 import {StyleAst} from "./parser/ast";
+import {sortObjectKeys} from "./utils";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
@@ -26,11 +27,18 @@ export const remapStyles = (data: StyleFiles, result: StyleDef) => (
     )
 );
 
-const toFlattenArray = (styles: StyleDef): StylesLookupTable => (
+const toFlattenArray = (ast: StyleAst): StylesLookupTable => (
   Object
-    .keys(styles)
-    .reduce((acc, style) => {
-      acc[style] = Object.keys(styles[style]);
+    .keys(ast)
+    .reduce((acc, file) => {
+      ast[file].selectors.forEach((sel) => {
+        sel.pieces.forEach(className => {
+          if (!acc[className]) {
+            acc[className] = [];
+          }
+          acc[className].push(file);
+        });
+      });
       return acc;
     }, {} as StylesLookupTable)
 );
@@ -45,13 +53,12 @@ export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
 );
 
 export function parseProjectStyles(data: StyleFiles) {
-  const styles: StyleDef = {};
-  remapStyles(data, styles);
+  const ast = astFromFiles(sortObjectKeys(data));
 
   return {
     isReady: true,
-    lookup: toFlattenArray(styles),
-    ast: astFromFiles(data),
+    lookup: toFlattenArray(ast),
+    ast,
   };
 }
 
@@ -59,7 +66,9 @@ export const getProjectStyles = () => {
   throw new Error('use `discoverProjectStyles` instead of getProjectStyles');
 };
 
-export function discoverProjectStyles(rootDir: string): StyleDefinition {
+const passAll = () => true;
+
+export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: string) => boolean = passAll): StyleDefinition {
   let resolve: any;
   let reject: any;
   const awaiter = new Promise<void>((res, rej) => {
@@ -77,7 +86,7 @@ export function discoverProjectStyles(rootDir: string): StyleDefinition {
   async function scanner() {
     const files: string[] =
       (await scanDirectory(rootDir, undefined, () => false))
-        .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+        .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0 && fileFilter(name));
 
     const styleFiles: StyleFiles = {};
     await Promise.all(
@@ -93,7 +102,11 @@ export function discoverProjectStyles(rootDir: string): StyleDefinition {
     styles => {
       Object.assign(result, styles);
       resolve();
-    }, reject
+    }, e => {
+      reject(e);
+      console.error(e);
+      throw new Error('used-styles failed to start');
+    }
   );
 
   return result;

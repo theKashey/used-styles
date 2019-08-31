@@ -1,7 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`test ast should handle keyframes and media 1`] = `
+Object {
+  "atRules": Array [
+    Object {
+      "css": "@-webkit-keyframes ANIMATION_NAME{
+      0%{-webkit-transform:rotate(0deg);}
+      to{-webkit-transform:rotate(359deg);}}",
+      "id": "ANIMATION_NAME",
+      "kind": "-webkit-keyframes",
+    },
+    Object {
+      "css": "@keyframes ANIMATION_NAME{
+      0%{-webkit-transform:rotate(0deg);}
+      to{-webkit-transform:rotate(359deg);}
+    }",
+      "id": "ANIMATION_NAME",
+      "kind": "keyframes",
+    },
+  ],
+  "bodies": Object {},
+  "file": "",
+  "selectors": Array [],
+}
+`;
+
 exports[`test ast should map simple style 1`] = `
 Object {
+  "atRules": Array [],
   "bodies": Object {
     "1": Object {
       "end": Object {
@@ -100,6 +126,23 @@ Object {
         "line": 19,
       },
     },
+    "6": Object {
+      "end": Object {
+        "column": 18,
+        "line": 22,
+      },
+      "id": 6,
+      "rules": Array [
+        Object {
+          "prop": "color",
+          "value": "red",
+        },
+      ],
+      "start": Object {
+        "column": 9,
+        "line": 22,
+      },
+    },
   },
   "file": "",
   "selectors": Array [
@@ -176,6 +219,16 @@ Object {
       "pieces": Array [],
       "postfix": "",
       "selector": "input",
+    },
+    Object {
+      "declaration": 6,
+      "media": Array [],
+      "pieces": Array [
+        "dou",
+        "ble",
+      ],
+      "postfix": "",
+      "selector": ".dou.ble",
     },
   ],
 }

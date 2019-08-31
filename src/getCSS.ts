@@ -81,8 +81,11 @@ export const criticalStylesToString = (str: string, def: StyleDefinition, filter
   return astToStyles(getStylesInText(str), def, filter);
 };
 
-export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
   assertIsReady(def);
-  const styles = extractAllUnmatchable(def) + astToStyles(getStylesInText(str), def, filter);
-  return wrapInStyle(styles);
+  return extractAllUnmatchable(def) + astToStyles(getStylesInText(str), def, filter);
+};
+
+export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+  return wrapInStyle(getCriticalRules(str,def, filter));
 };

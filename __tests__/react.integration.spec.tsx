@@ -3,7 +3,7 @@ import {renderToStaticNodeStream, renderToString} from 'react-dom/server';
 import {resolve} from 'path';
 
 import {
-  setReactOptimization,
+  enableReactOptimization,
   createCriticalStyleStream,
   createStyleStream,
   parseProjectStyles,
@@ -27,9 +27,7 @@ describe('File based css stream', () => {
   it('ok: test', async () => {
     await styles;
     expect(getUsedStyles("", styles)).toEqual(['file1.css']);
-    expect(getCriticalStyles("", styles)).toBe(`<style type="text/css" data-used-styles="true">html { color: htmlRED; }
-input { display: none; }
-</style>`);
+    expect(getCriticalStyles("", styles)).toMatchSnapshot();
 
     const output = renderToString(
       <div>
@@ -52,6 +50,8 @@ input { display: none; }
     expect(usedCritical).not.toMatch(/data-wrong-file1/);
     expect(usedCritical).toMatch(/data-from-file2/);
     expect(usedCritical).not.toMatch(/data-wrong-file1/);
+
+    expect(usedCritical).toMatch(/ANIMATION_NAME/);
 
     expect(usedCritical).toMatch(/htmlRED/);
   });
@@ -83,7 +83,7 @@ describe('React css stream', () => {
     });
   });
 
-  setReactOptimization();
+  enableReactOptimization();
 
   it('React.renderToStream', async () => {
     const criticalStream = createCriticalStyleStream(lookup);

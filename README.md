@@ -42,39 +42,68 @@ Bonus: Do the same for streams.
 
 Bonus: Do it only for `used styled`, not just imported somewhere. 
 
+## Limitation
+In the performance sake `used-styles` inlines a bit more styles than it should - 
+it's just harder to understand what shall be done.
+- inlines all `@keyframe` animations
+- inlines all `html, body` and other simple selectors (aka css-reset)
+- inlines all rules matching last part of a selector
+
+> And, hopefully
+
+- inlines all classes used in HTML code
+
 # API
 ## Discovery API
 Use to scan your `dist` folder to create a look up table between classNames and files they are described in.
 
-1. `getProjectStyles(buildDirrectory)` - generates class lookup table
+1. `discoverProjectStyles(buildDirrectory, filter): StyleDef` - generates class lookup table
+> you may use the second argument to control which files should be scanned
 
 ## Scanners
 Use to get used styled from render result or a stream
 
-2. `getUsedStyles(html): string[]` - returns all used files
-3. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream.
+2. `getUsedStyles(html, StyleDef): string[]` - returns all used files, you have to import them
+3. `getCriticalStyles(html, StyleDef) : string` - returns all used selectors and other applicable rules, wrapped with `style`
+4. `getCriticalRules(html, StyleDef): string` - the same, but without `<style>` tag
+
+5. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<links`
+5. `createCriticalStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<styles`.
 
 ### React
-There is absolutely the same scanners, but for `React`. Basically it's a simpler version of original scanner,
-which rely on the "correct" HTML emitted from React, and just __twice faster__.
+There are only two things about react:
+1. to inline critical styles use another helper - `getCriticalRules` which does not wrap result with `style` letting you do it
+```js
+import {getCriticalRules} from 'used-styles';
+const Header = () => (
+   <style 
+       data-used-styles 
+       dangerouslySetInnerHTML={{__html:getCriticalRules(markup, styleData)}}
+   />
+)
+```
+2. React produces more _valid_ code, and you might enable optimistic optimization, making used-styles a bit faster.
+```js
+import {enableReactOptimization} from 'used-styles';
+
+enableReactOptimization(); // 
+```
 
 # Example
 ## Static rendering
 There is nothing interesting here - just render, just `getUsedStyles`.
 ```js
-import {getProjectStyles, getUsedStyles} from 'used-styles';
-// or
-import {getProjectStyles} from 'used-styles';
-import {getUsedStyles} from 'used-styles/react';
+import {discoverProjectStyles, getUsedStyles} from 'used-styles';
+
 
 // generate lookup table on server start
-const stylesLookup = getProjectStyles('./build');
+const stylesLookup = discoverProjectStyles('./build');
 
 async function MyRender () {
-  const lookup = await stylesLookup;// it was a promise
+  await stylesLookup;// it is "thenable"
   // render App
   const markup = ReactDOM.renderToString(<App />)
-  const usedStyles = getUsedStyles(markup, lookup);
+  const usedStyles = getUsedStyles(markup, stylesLookup);
 
 usedStyles.forEach(style => {
   const link = `<link href="build/${style}" rel="stylesheet">\n`;
@@ -83,7 +112,7 @@ usedStyles.forEach(style => {
 
 // or 
 
-const criticalCSS = getCriticalStyles(markup, lookup);
+const criticalCSS = getCriticalStyles(markup, stylesLookup);
 // append this link to the header output
 ```
 ### Stream rendering
@@ -96,12 +125,12 @@ Stream rendering could be interleaved(more efficient) or block(more predictable)
 In case or React rendering you may use __interleaved streaming__, which would not delay TimeToFirstByte.
 It's quite similar how StyledComponents works
 ```js
-import {getProjectStyles, createLink} from 'used-styles';
+import {discoverProjectStyles, createLink} from 'used-styles';
 import {createStyleStream} from 'used-styles/react';
 import MultiStream from 'multistream';
 
 // generate lookup table on server start
-const stylesLookup = getProjectStyles('./build'); // __dirname usually
+const stylesLookup = discoverProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
 const readable = () => {
@@ -170,12 +199,12 @@ Idea is to:
 That's all are streams, concatenated in a right order.
 It's possible to interleave them, but that's is not expected buy a `hydrate`. 
 ```js
-import {getProjectStyles, createStyleStream, createLink} from 'used-styles';
+import {discoverProjectStyles, createStyleStream, createLink} from 'used-styles';
 import MultiStream from 'multistream';
 
 // .....
 // generate lookup table on server start
-const lookup = await getProjectStyles('./build'); // __dirname usually
+const lookup = await discoverProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
 const readable = () => {

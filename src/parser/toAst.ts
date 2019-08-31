@@ -2,9 +2,9 @@ import * as postcss from 'postcss';
 import {AtRule, Rule} from 'postcss';
 import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./ranges";
 import {mapSelector} from "./utils";
-import {SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
+import {AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
 
-const getAtRule = (rule: AtRule | Rule):string[] => {
+const getAtRule = (rule: AtRule | Rule): string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
     return getAtRule(rule.parent as any).concat(rule.parent.params);
   }
@@ -46,10 +46,28 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
 export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
+  const atRules: AtRules = [];
 
   const bodies: StyleBodies = {};
 
+  const atParents = new Set<any>();
+
+  root.walkAtRules(rule => {
+    if (rule.name != 'media') {
+      atParents.add(rule);
+      //atRules[rule.params] = atRules[rule.params] || []
+      atRules/*[rule.params]*/.push({
+        kind: rule.name,
+        id: rule.params,
+        css: rule.toString(),
+      });
+    }
+  });
+
   root.walkRules(rule => {
+    if (atParents.has(rule.parent)) {
+      return;
+    }
     const ruleSelectors = rule.selector.split(',');
     ruleSelectors
       .map(sel => sel.trim())
@@ -86,5 +104,6 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
     file,
     selectors,
     bodies,
+    atRules,
   };
 };

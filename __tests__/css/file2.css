@@ -14,3 +14,12 @@ body .class11 {
 body .class22 {
     content: "data-wrong-file2";
 }
+
+@keyframes ANIMATION_NAME {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+    }
+}
