@@ -11,9 +11,10 @@
 </div>
 
 
-> Bundler independent CSS part of SSR-friendly code splitting
+> Bundler and framework independent CSS part of SSR-friendly code splitting
 
-Detects used `css` files, and/or inlines critical styles. 
+Detects used `css` files from the output HTML, and/or __inlines critical styles__.
+Supports sync or __stream__ rendering. 
 
 ## Code splitting
 This is all about code splitting, Server Side Rendering and React, even is React has nothing with this library.
