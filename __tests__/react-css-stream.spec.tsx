@@ -6,6 +6,7 @@ import {StylesLookupTable} from "../src/types";
 
 describe('React css stream', () => {
   const createLookup = (lookup: StylesLookupTable): any => ({
+    isReady: true,
     lookup
   });
 

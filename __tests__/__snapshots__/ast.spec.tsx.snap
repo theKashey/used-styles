@@ -170,6 +170,13 @@ Object {
       "postfix": "",
       "selector": ".b",
     },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [],
+      "postfix": "",
+      "selector": "input",
+    },
   ],
 }
 `;

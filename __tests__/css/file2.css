@@ -1,0 +1,16 @@
+.only .that .class1, .someOtherClass, .class11 {
+    border: green;
+    content: "data-from-file2";
+}
+
+body .class11 {
+    content: "selector-11";
+}
+
+.only .another .class2 {
+    border: blue;
+}
+
+body .class22 {
+    content: "data-wrong-file2";
+}

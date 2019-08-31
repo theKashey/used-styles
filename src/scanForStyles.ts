@@ -44,27 +44,57 @@ export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
     }, {} as StyleAst)
 );
 
-export async function scanProjectStyles(data: StyleFiles) {
+export function parseProjectStyles(data: StyleFiles) {
   const styles: StyleDef = {};
   remapStyles(data, styles);
 
   return {
+    isReady: true,
     lookup: toFlattenArray(styles),
     ast: astFromFiles(data),
   };
 }
 
-export async function getProjectStyles(rootDir: string): Promise<StyleDefinition> {
-  const files: string[] =
-    (await scanDirectory(rootDir, undefined, () => false))
-      .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+export const getProjectStyles = () => {
+  throw new Error('use `discoverProjectStyles` instead of getProjectStyles');
+};
 
-  const styleFiles: StyleFiles = {};
-  await Promise.all(
-    files.map(async (file) => {
-      styleFiles[relative(rootDir, file)] = await getFileContent(file);
-    })
+export function discoverProjectStyles(rootDir: string): StyleDefinition {
+  let resolve: any;
+  let reject: any;
+  const awaiter = new Promise<void>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  const result: StyleDefinition = {
+    isReady: false,
+    then(res, rej) {
+      return awaiter.then(res, rej);
+    }
+  } as StyleDefinition;
+
+  async function scanner() {
+    const files: string[] =
+      (await scanDirectory(rootDir, undefined, () => false))
+        .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+
+    const styleFiles: StyleFiles = {};
+    await Promise.all(
+      files.map(async (file) => {
+        styleFiles[relative(rootDir, file)] = await getFileContent(file);
+      })
+    );
+
+    return parseProjectStyles(styleFiles);
+  }
+
+  scanner().then(
+    styles => {
+      Object.assign(result, styles);
+      resolve();
+    }, reject
   );
 
-  return scanProjectStyles(styleFiles);
+  return result;
 }

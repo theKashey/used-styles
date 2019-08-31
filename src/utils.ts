@@ -1,4 +1,4 @@
-import {CacheLine} from "./types";
+import {CacheLine, StyleDefinition} from "./types";
 import {isReact} from "./config";
 
 export const findLastBrace = (data: string): number => {
@@ -47,3 +47,11 @@ export const getStylesInReactText = (str: string): string[] => (
     className.substr(classPlaceholderLength, className.length - classPlaceholderLength - 1)
   ))
 );
+
+// -----
+
+export const assertIsReady = (def: StyleDefinition) => {
+  if (!def.isReady) {
+    throw new Error('used-styles: style definitions are not ready yet. You should `await discoverProjectStyles(...)`');
+  }
+};

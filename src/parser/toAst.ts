@@ -1,11 +1,11 @@
 import * as postcss from 'postcss';
 import {AtRule, Rule} from 'postcss';
 import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./ranges";
-import {mapSelector, mapStyles} from "./utils";
+import {mapSelector} from "./utils";
 import {SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
 
 const getAtRule = (rule: AtRule | Rule):string[] => {
-  if (rule && rule.parent && 'name' in rule.parent && rule.parent.name == 'media') {
+  if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
     return getAtRule(rule.parent as any).concat(rule.parent.params);
   }
   return [];
@@ -19,7 +19,7 @@ const getBreak = (rule: string) => {
     rule.indexOf('+'),
     rule.indexOf(':'),
   ].filter(index => index > 0);
-  if (breakPoints.length == 0) {
+  if (breakPoints.length === 0) {
     return rule.length;
   }
   const min = Math.min(...breakPoints);
@@ -78,9 +78,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
 
         stand.declaration = assignBody(delc, bodies).id;
 
-        if(stand.pieces.length>0) {
-          selectors.push(stand);
-        }
+        selectors.push(stand);
       });
   });
 

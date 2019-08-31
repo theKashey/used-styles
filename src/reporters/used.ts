@@ -1,7 +1,7 @@
 import {CacheLine, StyleDefinition, UsedTypes} from "../types";
 import {Transform} from "stream";
 import {getUsedStyles} from "../getCSS";
-import {createLine, findLastBrace} from "../utils";
+import {assertIsReady, createLine, findLastBrace} from "../utils";
 import {isReact} from "../config";
 
 export const process = (chunk: string, line: CacheLine, def: StyleDefinition, callback: (styles: UsedTypes) => void): string => (
@@ -50,6 +50,7 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
   return new Transform({
     // transform() is called with each chunk of data
     transform(chunk, _, _callback) {
+      assertIsReady(def);
       injections = [];
       const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, def, cb), 'utf-8');
       _callback(

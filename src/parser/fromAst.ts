@@ -3,7 +3,7 @@ import {SingleStyleAst, StyleBody, StyleRule, StyleSelector} from "./ast";
 let separator = process.env.NODE_ENV === 'production' ? '' : '\n';
 
 export const escapeValue = (value: string, name: string) => {
-  if (name == 'content') return value.split('\\').join('\\\\');
+  if (name === 'content') return value.split('\\').join('\\\\');
   return value;
 };
 
@@ -36,6 +36,7 @@ const renderRule = (rule: StyleSelector, style: StyleBody) => (
 );
 
 const isMatching = (selector: string, rule: StyleSelector) => (
+  rule.pieces.length > 0 &&
   rule.pieces.some(piece => piece === selector)
 );
 
@@ -43,16 +44,34 @@ const findMatchingSelectors = (selector: string, selectors: StyleSelector[]): St
   selectors.filter(rule => isMatching(selector, rule))
 );
 
-export const fromAst = (rules: string[], {selectors, bodies}: SingleStyleAst, filter?: (selector: string) => boolean) => {
+const findUnmatchableSelectors = (selectors: StyleSelector[]): StyleSelector[] => (
+  selectors.filter(rule => rule.pieces.length === 0)
+);
+
+export const fromAst = (rules: string[], def: SingleStyleAst, filter?: (selector: string) => boolean) => {
 
   const blocks: StyleSelector[] = [];
 
   rules.forEach(rule => {
     blocks.push(
-      ...findMatchingSelectors(rule, selectors)
+      ...findMatchingSelectors(rule, def.selectors)
         .filter(block => !filter || filter(block.selector))
     );
   });
+
+  return convertToString(blocks, def);
+};
+
+export const getUnmatchableRules = (def: SingleStyleAst, filter?: (selector: string) => boolean): StyleSelector[] => (
+  findUnmatchableSelectors(def.selectors)
+    .filter(block => !filter || filter(block.selector))
+);
+
+export const extractUnmatchable = (def: SingleStyleAst, filter?: (selector: string) => boolean) => (
+  convertToString(getUnmatchableRules(def, filter), def)
+);
+
+export const convertToString = (blocks: StyleSelector[], {bodies}: SingleStyleAst) => {
 
   blocks.sort((ruleA, ruleB) => bodies[ruleA.declaration].id - bodies[ruleB.declaration].id);
 

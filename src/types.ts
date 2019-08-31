@@ -14,6 +14,8 @@ export type UsedTypesRef = Record<string, boolean>;
 
 
 export interface StyleDefinition {
+  isReady: boolean;
   lookup: StylesLookupTable;
   ast: StyleAst;
+  then(resolve?: () => void, reject?: () => void): Promise<void>;
 }
