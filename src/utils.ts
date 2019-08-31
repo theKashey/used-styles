@@ -63,7 +63,7 @@ export function sortObjectKeys<T extends object>(obj: T): T {
     .keys(obj)
     .sort()
     .reduce((acc, key) => {
-      acc[key] = obj[key];
+      acc[key] = (obj as any)[key];
       return acc;
-    }, {} as T);
+    }, {} as any);
 }
