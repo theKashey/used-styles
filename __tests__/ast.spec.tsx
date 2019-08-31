@@ -20,6 +20,8 @@ describe('test ast', () => {
         .c { position: absolute; }
         .a { position: relative; }  
       }
+      
+      .a, .b, input { color: rightColor }
     `;
 
   it('should map simple style', () => {
@@ -29,14 +31,19 @@ describe('test ast', () => {
 
   it('should remap simple style', () => {
     const ast = buildAst(CSS);
-    const css = fromAst(['d'], ast);
+    const css = fromAst(['e'], ast);
     expect(css).toMatchSnapshot();
+  });
+
+  it('dont map unused styles', () => {
+    const ast = buildAst(CSS);
+    const cssFalsePositive = fromAst(['d', 'b'], ast);
+    expect(cssFalsePositive).toBe('.b { color: rightColor; }\n');
   });
 
   it('should remap complex style', () => {
     const ast = buildAst(CSS);
     const css = fromAst(['a', 'c'], ast);
-    console.log(css);
     expect(css).toMatchSnapshot();
   });
 });

@@ -83,6 +83,23 @@ Object {
         "line": 16,
       },
     },
+    "5": Object {
+      "end": Object {
+        "column": 39,
+        "line": 19,
+      },
+      "id": 5,
+      "rules": Array [
+        Object {
+          "prop": "color",
+          "value": "rightColor",
+        },
+      ],
+      "start": Object {
+        "column": 23,
+        "line": 19,
+      },
+    },
   },
   "file": "",
   "selectors": Array [
@@ -99,7 +116,6 @@ Object {
       "declaration": 1,
       "media": Array [],
       "pieces": Array [
-        "b",
         "c",
       ],
       "postfix": ".c",
@@ -109,7 +125,6 @@ Object {
       "declaration": 2,
       "media": Array [],
       "pieces": Array [
-        "d",
         "e",
       ],
       "postfix": "~ .e:not(focused)",
@@ -137,6 +152,24 @@ Object {
       "postfix": "",
       "selector": ".a",
     },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [
+        "a",
+      ],
+      "postfix": "",
+      "selector": ".a",
+    },
+    Object {
+      "declaration": 5,
+      "media": Array [],
+      "pieces": Array [
+        "b",
+      ],
+      "postfix": "",
+      "selector": ".b",
+    },
   ],
 }
 `;
@@ -149,7 +182,10 @@ margin: 6px 10px; }
 @media only screen and (max-width: 600px) {
 .c { position: absolute; }
 .a { position: relative; }
-}"
+}
+
+.a { color: rightColor; }
+"
 `;
 
 exports[`test ast should remap simple style 1`] = `

@@ -1,7 +1,7 @@
 import * as postcss from 'postcss';
 import {AtRule, Rule} from 'postcss';
 import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./ranges";
-import {mapStyles} from "./utils";
+import {mapSelector, mapStyles} from "./utils";
 import {SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
 
 const getAtRule = (rule: AtRule | Rule):string[] => {
@@ -57,7 +57,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
         const stand: StyleSelector = {
           media: getAtRule(rule),
           selector: selector,
-          pieces: mapStyles(selector),
+          pieces: mapSelector(selector),
           postfix: getPostfix(selector),
           declaration: 0,
         };
@@ -77,7 +77,10 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
-        selectors.push(stand);
+
+        if(stand.pieces.length>0) {
+          selectors.push(stand);
+        }
       });
   });
 
