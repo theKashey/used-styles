@@ -49,6 +49,12 @@ it's just harder to understand what shall be done.
 - inlines all `html, body` and other simple selectors (aka css-reset)
 - inlines all rules matching last part of a selector
 
+### Speed
+>Speed, I am speed!
+
+For the 516kb page, which needs 80ms to renderToString resulting time for `getCriticalRules`(very expensive operation)
+would be around __4ms__.
+
 > And, hopefully
 
 - inlines all classes used in HTML code
