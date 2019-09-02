@@ -55,15 +55,3 @@ export const assertIsReady = (def: StyleDefinition) => {
     throw new Error('used-styles: style definitions are not ready yet. You should `await discoverProjectStyles(...)`');
   }
 };
-
-// ----
-
-export function sortObjectKeys<T extends object>(obj: T): T {
-  return Object
-    .keys(obj)
-    .sort()
-    .reduce((acc, key) => {
-      acc[key] = (obj as any)[key];
-      return acc;
-    }, {} as any);
-}

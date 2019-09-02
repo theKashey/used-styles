@@ -3,11 +3,11 @@ import {promisify} from 'util';
 import {extname, relative} from 'path';
 // @ts-ignore
 import scanDirectory from 'scan-directory';
-import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable} from "./types";
+
+import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable, SyncStyleDefinition} from "./types";
 import {mapStyles} from "./parser/utils";
 import {buildAst} from "./parser/toAst";
 import {StyleAst} from "./parser/ast";
-import {sortObjectKeys} from "./utils";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
@@ -43,7 +43,7 @@ const toFlattenArray = (ast: StyleAst): StylesLookupTable => (
     }, {} as StylesLookupTable)
 );
 
-export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
+const astFromFiles = (fileDate: StyleFiles): StyleAst => (
   Object
     .keys(fileDate)
     .reduce((acc, file) => {
@@ -52,8 +52,8 @@ export const astFromFiles = (fileDate: StyleFiles): StyleAst => (
     }, {} as StyleAst)
 );
 
-export function parseProjectStyles(data: StyleFiles) {
-  const ast = astFromFiles(sortObjectKeys(data));
+export function parseProjectStyles(data: StyleFiles): SyncStyleDefinition {
+  const ast = astFromFiles(data);
 
   return {
     isReady: true,
@@ -68,7 +68,23 @@ export const getProjectStyles = () => {
 
 const passAll = () => true;
 
-export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: string) => boolean = passAll): StyleDefinition {
+const flattenOrder = (order: boolean | number): false | number => {
+  if (typeof order === 'number' || typeof order === 'string') {
+    return +order;
+  }
+  if (order === true) {
+    return 0;
+  }
+
+  return false;
+};
+
+interface FlattenFileOrder {
+  file: string;
+  order: number;
+}
+
+export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: string) => boolean | number | null = passAll): StyleDefinition {
   let resolve: any;
   let reject: any;
   const awaiter = new Promise<void>((res, rej) => {
@@ -85,10 +101,21 @@ export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: st
 
   async function scanner() {
     const files: string[] =
-      (await scanDirectory(rootDir, undefined, () => false))
-        .filter((name: string) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0 && fileFilter(name));
+      (await scanDirectory(rootDir, undefined, () => false) as string[])
+        .filter(name => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+        .sort()
+        .map(file => ({
+          file,
+          order: flattenOrder(fileFilter(file)),
+        }))
+        .filter(({order}) => order !== false)
+        .sort((a: FlattenFileOrder, b: FlattenFileOrder) => (a.order - b.order))
+        .map(({file}) => file);
 
     const styleFiles: StyleFiles = {};
+    // prefill the obiect to pin keys ordering
+    files.map( file => styleFiles[relative(rootDir, file)] = undefined as any);
+
     await Promise.all(
       files.map(async (file) => {
         styleFiles[relative(rootDir, file)] = await getFileContent(file);

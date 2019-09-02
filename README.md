@@ -50,22 +50,38 @@ it's just harder to understand what shall be done.
 - inlines all `html, body` and other simple selectors (aka css-reset)
 - inlines all rules matching last part of a selector
 
+> And, hopefully
+
+- __inlines all classes used in HTML code__
+
+
 ### Speed
 >Speed, I am speed!
 
 For the 516kb page, which needs 80ms to renderToString resulting time for `getCriticalRules`(very expensive operation)
 would be around __4ms__.
 
-> And, hopefully
-
-- inlines all classes used in HTML code
-
 # API
 ## Discovery API
 Use to scan your `dist` folder to create a look up table between classNames and files they are described in.
 
-1. `discoverProjectStyles(buildDirrectory, filter): StyleDef` - generates class lookup table
+1. `discoverProjectStyles(buildDirrectory, [filter]): StyleDef` - generates class lookup table
 > you may use the second argument to control which files should be scanned
+
+`filter` is very important function here. It takes `fileName` as input, and returns 
+`false`, `true`, or a `number` as result. `False` value would exclude chunk from the set, while `number`
+would change the order of the chunk.
+Keeping chunk ordering "as expected" is required to preserve style declaration order, which is important for many
+existing styles.
+
+```js
+// with chunk format [chunkhash]_[id]
+const styleData = discoverProjectStyles(resolve('build'), name => {
+  // get ID of a chunk and use it as order hint
+  const match = name.match(/(\d)_c.css/);
+  return match && +match[1];
+});
+```
 
 ## Scanners
 Use to get used styled from render result or a stream

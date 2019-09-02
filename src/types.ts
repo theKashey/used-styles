@@ -1,4 +1,4 @@
-import {SingleStyleAst, StyleAst} from "./parser/ast";
+import {StyleAst} from "./parser/ast";
 
 export type StylesLookupTable = Record<string, string[]>;
 
@@ -12,6 +12,11 @@ export type StyleDef = Record<string, Record<string, boolean>>;
 export type UsedTypes = string[];
 export type UsedTypesRef = Record<string, boolean>;
 
+export interface SyncStyleDefinition {
+  isReady: true;
+  lookup: StylesLookupTable;
+  ast: StyleAst;
+}
 
 export interface StyleDefinition {
   isReady: boolean;

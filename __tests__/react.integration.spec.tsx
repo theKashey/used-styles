@@ -17,7 +17,10 @@ describe('File based css stream', () => {
   let styles: StyleDefinition;
 
   beforeEach(() => {
-    styles = discoverProjectStyles(resolve(__dirname ,'css'));
+    styles = discoverProjectStyles(resolve(__dirname ,'css'), name => {
+      const match = name.match(/file(\d+).css/);
+      return match && +match[1];
+    });
   });
 
   it('fail: should throw if not ready', () => {
