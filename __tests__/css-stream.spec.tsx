@@ -8,6 +8,12 @@ describe('css stream', () => {
 
   const createLookup = (lookup: StylesLookupTable): any => ({
     isReady: true,
+    ast: Object.keys(lookup).reduce((acc, file) => {
+      lookup[file].forEach(f => acc[f] = {
+        selectors: [],
+      });
+      return acc;
+    }, {}),
     lookup
   });
 

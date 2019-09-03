@@ -12,25 +12,7 @@ export const getUnusableStyles = (def: StyleDefinition): UsedTypesRef => (
     }, {} as UsedTypesRef)
 );
 
-export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
-  assertIsReady(def);
-  return (
-    Object.keys(
-      getStylesInText(str).reduce((styles, className) => {
-        const classes = className.split(' ');
-        classes.forEach(singleClass => {
-          const files = def.lookup[singleClass];
-          if (files) {
-            files.forEach((file: string) => styles[file] = true);
-          }
-        });
-        return styles;
-      }, getUnusableStyles(def))
-    )
-  );
-};
-
-export const astToStyles = (styles: string[], def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+export const astToUsedStyles = (styles: string[], def: StyleDefinition) => {
   const {lookup, ast} = def;
   const fetches: Record<string, Record<string, boolean>> = {};
   const visitedStyles = new Set<string>();
@@ -55,10 +37,41 @@ export const astToStyles = (styles: string[], def: StyleDefinition, filter?: (se
     });
   });
 
-  return (
+  return {
+    fetches,
+    usage: Object.keys(ast).filter(file => !!fetches[file])
+  }
+};
+
+export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
+  assertIsReady(def);
+  const {usage} = astToUsedStyles(getStylesInText(str), def);
+  const flags = {
+    ...getUnusableStyles(def),
+    ...usage.reduce((acc, file) => {
+      acc[file] = true;
+      return acc;
+    }, {})
+  };
+
+  return Object.keys(
     Object
-      .keys(ast)
-      .filter(file => !!fetches[file])
+      .keys(def.ast)
+      .reduce((acc, file) => {
+        if (flags[file]) {
+          acc[file] = true
+        }
+        return acc;
+      }, {})
+  );
+};
+
+export const astToStyles = (styles: string[], def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+  const {ast} = def;
+  const {fetches, usage} = astToUsedStyles(styles, def);
+
+  return (
+    usage
       .map(file => fromAst(Object.keys(fetches[file]), ast[file], filter))
       .join('\n')
   );
@@ -87,5 +100,5 @@ export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (se
 };
 
 export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
-  return wrapInStyle(getCriticalRules(str,def, filter));
+  return wrapInStyle(getCriticalRules(str, def, filter));
 };
