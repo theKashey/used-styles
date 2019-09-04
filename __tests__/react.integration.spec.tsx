@@ -27,6 +27,17 @@ describe('File based css stream', () => {
     expect(() => getUsedStyles("", styles)).toThrow();
   });
 
+  it('memoization: test', async () => {
+    await styles;
+    const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
+    delete styles.ast['file2'];
+    const s2 = getCriticalStyles('<div class="class2 someclass">', styles);
+    const s3 = getCriticalStyles('<div class="class2 somethingNotUsed">', styles);
+
+    expect(s1).toBe(s2);
+    expect(s1).not.toBe(s3);
+  });
+
   it('ok: test', async () => {
     await styles;
     expect(getUsedStyles("", styles)).toEqual(['file1.css']);

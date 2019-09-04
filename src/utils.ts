@@ -1,5 +1,6 @@
 import {CacheLine, StyleDefinition} from "./types";
 import {isReact} from "./config";
+import {memoizeOne} from './memoize-one';
 
 export const findLastBrace = (data: string): number => {
   let fromIndex = 0;
@@ -21,11 +22,14 @@ export const createLine = (): CacheLine => ({
 
 // ------
 
+const memoizedArray = memoizeOne((...args: string[]): string[] => args);
 
 export const getStylesInText = (str: string): string[] => (
-  isReact()
-    ? getStylesInReactText(str)
-    : getStylesInPlainText(str)
+  memoizedArray(
+    ...isReact()
+      ? getStylesInReactText(str)
+      : getStylesInPlainText(str)
+  )
 );
 
 export const getStylesInPlainText = (str: string): string[] => (

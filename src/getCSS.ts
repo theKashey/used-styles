@@ -1,8 +1,9 @@
+import {kashe} from 'kashe';
 import {StyleDefinition, UsedTypes, UsedTypesRef} from "./types";
 import {extractUnmatchable, fromAst, getUnmatchableRules} from "./parser/fromAst";
 import {assertIsReady, getStylesInText} from "./utils";
 
-export const getUnusableStyles = (def: StyleDefinition): UsedTypesRef => (
+export const getUnusableStyles = kashe((def: StyleDefinition): UsedTypesRef => (
   Object
     .keys(def.ast || {})
     .filter(key => getUnmatchableRules(def.ast[key]).length > 0)
@@ -10,9 +11,9 @@ export const getUnusableStyles = (def: StyleDefinition): UsedTypesRef => (
       acc[file] = true;
       return acc;
     }, {} as UsedTypesRef)
-);
+));
 
-export const astToUsedStyles = (styles: string[], def: StyleDefinition) => {
+export const astToUsedStyles = kashe((styles: string[], def: StyleDefinition) => {
   const {lookup, ast} = def;
   const fetches: Record<string, Record<string, boolean>> = {};
   const visitedStyles = new Set<string>();
@@ -41,7 +42,7 @@ export const astToUsedStyles = (styles: string[], def: StyleDefinition) => {
     fetches,
     usage: Object.keys(ast).filter(file => !!fetches[file])
   }
-};
+});
 
 export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
   assertIsReady(def);
@@ -66,7 +67,7 @@ export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
   );
 };
 
-export const astToStyles = (styles: string[], def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+export const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: (selector: string) => boolean): string => {
   const {ast} = def;
   const {fetches, usage} = astToUsedStyles(styles, def);
 
@@ -75,7 +76,7 @@ export const astToStyles = (styles: string[], def: StyleDefinition, filter?: (se
       .map(file => fromAst(Object.keys(fetches[file]), ast[file], filter))
       .join('\n')
   );
-};
+});
 
 export const wrapInStyle = (styles: string) => (
   styles
@@ -83,11 +84,11 @@ export const wrapInStyle = (styles: string) => (
     : ''
 );
 
-export const extractAllUnmatchable = (def: StyleDefinition) => (
+export const extractAllUnmatchable = kashe((def: StyleDefinition) => (
   Object
     .keys(def.ast || {})
     .reduce((acc, file) => acc + extractUnmatchable(def.ast[file]), '')
-);
+));
 
 export const criticalStylesToString = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
   assertIsReady(def);

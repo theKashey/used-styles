@@ -40,6 +40,7 @@
     "code splitting"
   ],
   "dependencies": {
+    "kashe": "^0.2.0",
     "postcss": "^7.0.17",
     "scan-directory": "^1.0.0"
   }

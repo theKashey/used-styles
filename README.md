@@ -36,12 +36,15 @@ bound resources to that graph, but tracking is hard, and quite bound to the bund
 
 ## Solution
 1. Scan all `.css` files, extracting all the style names.
-2. Scan resulting `html`, finding all the `classNames` used
-3. Calculate all the files you shall send to a client.
+2. Scan resulting `html`, finding all the `classNames` used.
+3a. Calculate all styles you need to render a given HTML.
+3b. Calculate all the files you shall send to a client.
+4. Inject styles or links
+5. Hoist or remove styles on clientside startup 
 
-Bonus: Do the same for streams.
+> Bonus: Do the same for streams.
 
-Bonus: Do it only for `used styled`, not just imported somewhere. 
+> Bonus: Do it only for really `used styled`, not just imported somewhere. 
 
 ## Limitation
 In the performance sake `used-styles` inlines a bit more styles than it should - 
@@ -129,7 +132,9 @@ async function MyRender () {
   const usedStyles = getUsedStyles(markup, stylesLookup);
 
 usedStyles.forEach(style => {
-  const link = `<link href="build/${style}" rel="stylesheet">\n`;
+  const link = `<link  rel="stylesheet" href="build/${style}">\n`;
+  // or
+  const link = `<link rel="prefetch" as="style" href="build/${style}">\n`;
   // append this link to the header output or to the body
 });
 
@@ -138,7 +143,19 @@ usedStyles.forEach(style => {
 const criticalCSS = getCriticalStyles(markup, stylesLookup);
 // append this link to the header output
 ```
+Any _bulk_ CSS operations, both `getCriticalStyles` and `getUsedStyles` __are safe__ and preserve the selector rule order.
+You __may combine__ both methods, to prefetch full styles, and inline critical CSS.
+
+! Keep in mind - calling two functions is as fast, as calling a single one !
+
 ### Stream rendering
+Please keep in mind - stream rendering in `NOT SAFE` in terms of CSS, as long as __it might affect the ordering of selectors__.
+Only pure BEM and Atomic CSS are "safe", _just some CSS_ would not be compatible. 
+Please __test__ results before releasing into production.
+
+> If you do not understand why and how selector order is important - please __do not use__ stream transformer.
+
+
 Stream rendering is much harder, and much more efficient.
 The idea is to make it efficient, and not delay Time-To-First-Byte. And the second byte.
 
@@ -203,7 +220,9 @@ You have to move injected styles prior rehydration.
   import { moveStyles } from 'used-styles/moveStyles';
   moveStyles();
 ```
-You might want to remove styles after rehydration to prevent duplication.
+
+You might want to remove styles after rehydration to prevent duplication. 
+Double check that corresponding _real_ CSS is loaded.
 ```js
   import { removeStyles } from 'used-styles/moveStyles';
   removeStyles(); 
