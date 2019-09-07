@@ -1,31 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`File based css stream memoization: test 1`] = `
-"<style type=\\"text/css\\" data-used-styles=\\"true\\">html { color: htmlRED; }
-input { display: none; }
-@keyframes ANIMATION_NAME {
-    0% {
-        -webkit-transform: rotate(0deg);
-    }
-    to {
-        -webkit-transform: rotate(359deg);
-    }
-}</style>"
-`;
-
-exports[`File based css stream memoization: test 2`] = `
-"<style type=\\"text/css\\" data-used-styles=\\"true\\">html { color: htmlRED; }
-input { display: none; }
-@keyframes ANIMATION_NAME {
-    0% {
-        -webkit-transform: rotate(0deg);
-    }
-    to {
-        -webkit-transform: rotate(359deg);
-    }
-}</style>"
-`;
-
 exports[`File based css stream ok: test 1`] = `
 "<style type=\\"text/css\\" data-used-styles=\\"true\\">html { color: htmlRED; }
 input { display: none; }
