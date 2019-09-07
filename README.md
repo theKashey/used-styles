@@ -13,20 +13,21 @@
 
 > Bundler and framework independent CSS part of SSR-friendly code splitting
 
-Detects used `css` files from the output HTML, and/or __inlines critical styles__.
+Detects used `css` files from the given HTML, and/or __inlines critical styles__.
 Supports sync or __stream__ rendering. 
 
 ## Code splitting
-This is all about code splitting, Server Side Rendering and React, even is React has nothing with this library.
+This is all about code splitting, Server Side Rendering and React, even if React has nothing to do with this library.
 
 Code splitting is a good feature, and SSR is also awesome, but then you have
-to load all the use `scripts` on the client, before making a page alive.
+to load all the used `scripts` on the client, before making a page alive.
+Everybody is talking not about `.css`, but only about `.js`. 
 
-That's done, in a different ways. That's not a big task, as long as the _usage_ of code splitted block
-is _trackable_ - you are using it. 
+That's done, in a different ways. That's not a big task, as long as the _usage_ of code splitted blocks
+is _trackable_ - you are using it, and components defined inside. 
 
 CSS is harder - you might just use random classes and what next? You are just importing CSS here and where,
-sometimes indirectly, and there is no way to understand whats happening.
+sometimes indirectly, and there is no way to understand what's happening.
 
 > While it's possible for webpack to add a `Link` to document header once some `Component` uses some `Style`,
 you can't do the same in the __concurrent__ server environment - there is no <head/> to add a Link.
