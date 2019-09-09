@@ -7,17 +7,17 @@ export const mapStyles = (styles: string) => (
       .replace(/({[^{}]+})/g, '$')
       .replace(/({[^{}]+})/g, '$')
       // match style name
-      .match(/\.([^>~,$:{\[\s]+)?/g) || []
+      .match(/\.([^>~,+$:{\[\s]+)?/g) || []
   )
   // clean style name
-    .map(x => x.replace(/[\s,.>~$]+/, ''))
+    .map(x => x.replace(/[\s,.>~+$]+/, ''))
     .map(x => x.replace(/[.\s.:]+/, ''))
 );
 
 export const mapSelector= (selector: string) => {
 
   const ruleSelection =
-    selector.match(/\.([^>~$:{\[\s]+)?/g) || []
+    selector.match(/\.([^>~+$:{\[\s]+)?/g) || []
 
   // clean style name
 //    .map(x => x.replace(/[\s,.>~$]+/, ''))
@@ -27,7 +27,7 @@ export const mapSelector= (selector: string) => {
   const effectiveMatcher = (ruleSelection.find(classish)) || '';
 
   return effectiveMatcher
-    .match(/(\.[^.>~,$:{\[\s]+)?/g)
+    .match(/(\.[^.>~+,$:{\[\s]+)?/g)
     .map(x => x.replace(/[.\s.:]+/, ''))
     .filter(Boolean);
 }

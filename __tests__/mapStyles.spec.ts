@@ -21,5 +21,6 @@ describe('test map selector', () => {
 
   it('should keep the last style', () => {
     expect(mapSelector('.a input>.b:focus>input')).toEqual(['b']);
+    expect(mapSelector('.item+.item:before')).toEqual(['item']);
   });
 });
