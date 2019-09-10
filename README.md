@@ -297,5 +297,14 @@ from __react-imported-component__.
 # Performance
 Almost unmeasurable. It's a simple and single RegExp, which is not comparable to the React Render itself.
 
+# Comparison
+> comparing with tools listed at [Google's Optimize CSS Delivery](https://developers.google.com/web/tools/lighthouse/audits/unused-css#inlining)
+
+- [penthouse](https://github.com/pocketjoso/penthouse) - a super slow puppetter based solution. No integration with a real run time renderer is possible. Generates one big style block at the beginning of a file.
+- [critical](https://github.com/addyosmani/critical) - a super slow puppetter based solution. Able to extract critical style "above the fold". 
+- [inline-critical](https://github.com/bezoerb/inline-critical) - slow jsdom based solution. Generates one big style block at the beginning of a file, and replaces all other `links` by async variants. However, it does not detect any critical or used styles in provided HTML - HTML is used only as a output target. 👎
+
+`used-styles` is faster that libraries listed above, optimized for multiple runs, as well as
+
 # License
 MIT 
