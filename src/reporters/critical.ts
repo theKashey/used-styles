@@ -1,6 +1,6 @@
 import {CacheLine, StyleDefinition} from "../types";
 import {Transform} from "stream";
-import {criticalStylesToString, extractAllUnmatchable, wrapInStyle} from "../getCSS";
+import {criticalStylesToString, extractAllUnmatchableAsString, wrapInStyle} from "../getCSS";
 import {assertIsReady, createLine, findLastBrace} from "../utils";
 import {isReact} from "../config";
 
@@ -56,7 +56,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
       injections = [];
 
       if(tick===0) {
-        const staticStyles = extractAllUnmatchable(def);
+        const staticStyles = extractAllUnmatchableAsString(def);
         staticStyles && injections.push(staticStyles);
       }
       tick++;

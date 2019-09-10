@@ -18,9 +18,17 @@ export interface SyncStyleDefinition {
   ast: StyleAst;
 }
 
+export interface StyleChunk {
+  file: string,
+  css: string;
+}
+
+export type FlagType = Record<string, boolean>
+
 export interface StyleDefinition {
   isReady: boolean;
   lookup: StylesLookupTable;
   ast: StyleAst;
+  root: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
 }

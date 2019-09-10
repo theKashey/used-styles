@@ -11,9 +11,9 @@ function areInputsEqual(newInputs: any[], lastInputs: any[]) {
 }
 
 export function memoizeOne<T extends () => any>(resultFn: T): T {
-  let lastThis;
-  let lastArgs = [];
-  let lastResult;
+  let lastThis: any;
+  let lastArgs: any[] = [];
+  let lastResult: any;
   let calledOnce = false;
 
   function memoized() {
