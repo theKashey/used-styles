@@ -29,6 +29,6 @@ export interface StyleDefinition {
   isReady: boolean;
   lookup: StylesLookupTable;
   ast: StyleAst;
-  root: string;
+  urlPrefix: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
 }

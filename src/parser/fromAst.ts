@@ -1,5 +1,6 @@
 import * as postcss from 'postcss';
 import {SingleStyleAst, StyleBody, StyleRule, StyleSelector} from "./ast";
+import {kashe} from "kashe";
 
 let separator = process.env.NODE_ENV === 'production' ? '' : '\n';
 
@@ -33,9 +34,9 @@ const getMedia = ({media}: { media: string[] }) => {
 
 type SelectorLookUp = Set<string>;
 
-const renderRule = (rule: StyleSelector, style: StyleBody) => (
+const renderRule = kashe((rule: StyleSelector, style: StyleBody) => (
   `${rule.selector} { ${declsToString(style.rules)} }`
-);
+));
 
 const isMatching = (rule: StyleSelector, rules: SelectorLookUp) => (
   rule.pieces.length > 0 &&

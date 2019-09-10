@@ -19,6 +19,9 @@ export const createLine = (): CacheLine => ({
   tail: '',
 });
 
+export function unique<T extends any[]>(data: T): T {
+  return Array.from(new Set<any>(data));
+}
 
 // ------
 

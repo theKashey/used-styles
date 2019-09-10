@@ -1,7 +1,7 @@
 import {kashe} from 'kashe';
 import {FlagType, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef} from "./types";
 import {extractUnmatchable, fromAst, getUnmatchableRules} from "./parser/fromAst";
-import {assertIsReady, getStylesInText} from "./utils";
+import {assertIsReady, getStylesInText, unique} from "./utils";
 
 export const getUnusableStyles = kashe((def: StyleDefinition): UsedTypesRef => (
   Object
@@ -15,8 +15,9 @@ export const getUnusableStyles = kashe((def: StyleDefinition): UsedTypesRef => (
 
 export const astToUsedStyles = kashe((styles: string[], def: StyleDefinition) => {
   const {lookup, ast} = def;
-  const fetches: Record<string, Record<string, boolean>> = {};
+  const fetches: Record<string, FlagType> = {};
   const visitedStyles = new Set<string>();
+
   styles.forEach(className => {
     if (visitedStyles.has(className)) {
       return;
@@ -118,7 +119,7 @@ const getRawCriticalRules = (str: string, def: StyleDefinition, filter?: (select
   assertIsReady(def);
   return [
     ...extractAllUnmatchable(def),
-    ...astToStyles(getStylesInText(str), def, filter)
+    ...astToStyles(getStylesInText(str), def, filter),
   ];
 };
 
@@ -128,5 +129,7 @@ export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (se
 };
 
 export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
-  return wrapInStyle(getCriticalRules(str, def, filter));
+  const styles = getRawCriticalRules(str, def, filter);
+  const {urlPrefix = ''} = def;
+  return wrapInStyle(styles.map(({css}) => css).join(''), unique(styles.map(({file}) => `${urlPrefix}${file}`)));
 };
