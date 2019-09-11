@@ -14,8 +14,8 @@ input { display: none; }
 `;
 
 exports[`React css stream React.renderToStream 1`] = `
-"<style type=\\"text/css\\" data-used-styles=\\"true\\">input { color: rightInput; }
-.a,
+"input { color: rightInput; }
+<style type=\\"text/css\\" data-used-styles=\\"file1,file2\\">.a,
 .b { color: rightColor; }
 .c,
 .d { marker: blueMark; }

@@ -47,7 +47,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
     style && injections.push(style);
   };
 
-  let tick=0;
+  let tick = 0;
 
   return new Transform({
     // transform() is called with each chunk of data
@@ -55,7 +55,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
       assertIsReady(def);
       injections = [];
 
-      if(tick===0) {
+      if (tick === 0) {
         const staticStyles = extractAllUnmatchableAsString(def);
         staticStyles && injections.push(staticStyles);
       }
@@ -65,7 +65,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
 
       _callback(
         undefined,
-        wrapInStyle(injections.join('')) + chunkData,
+        injections.join('') + chunkData,
       );
     },
 

@@ -110,9 +110,13 @@ export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) => (
     .reduce((acc, {css}) => acc + css, '')
 ));
 
+const criticalRulesToStyle = (styles: StyleChunk[], urlPrefix = ''): string => (
+  wrapInStyle(styles.map(({css}) => css).join(''), unique(styles.map(({file}) => `${urlPrefix}${file}`)))
+);
+
 export const criticalStylesToString = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
   assertIsReady(def);
-  return astToStyles(getStylesInText(str), def, filter).map(({css}) => css).join('');
+  return criticalRulesToStyle(astToStyles(getStylesInText(str), def, filter), def.urlPrefix);
 };
 
 const getRawCriticalRules = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean) => {
@@ -128,8 +132,6 @@ export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (se
   return getRawCriticalRules(str, def, filter).map(({css}) => css).join('');
 };
 
-export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
-  const styles = getRawCriticalRules(str, def, filter);
-  const {urlPrefix = ''} = def;
-  return wrapInStyle(styles.map(({css}) => css).join(''), unique(styles.map(({file}) => `${urlPrefix}${file}`)));
-};
+export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => (
+  criticalRulesToStyle(getRawCriticalRules(str, def, filter), def.urlPrefix)
+);
