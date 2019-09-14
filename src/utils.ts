@@ -20,7 +20,7 @@ export const createLine = (): CacheLine => ({
 });
 
 export function unique<T extends any[]>(data: T): T {
-  return Array.from(new Set<any>(data));
+  return Array.from(new Set<any>(data)) as T;
 }
 
 // ------

@@ -92,7 +92,7 @@ Use to get used styled from render result or a stream
 
 2. `getUsedStyles(html, StyleDef): string[]` - returns all used files, you have to import them
 3. `getCriticalStyles(html, StyleDef) : string` - returns all used selectors and other applicable rules, wrapped with `style`
-4. `getCriticalRules(html, StyleDef): string` - the same, but without `<style>` tag
+4. `getCriticalRules(html, StyleDef): string` - __the same__, but without `<style>` tag, letting you handle in a way you want
 
 5. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<links`
 5. `createCriticalStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<styles`.
