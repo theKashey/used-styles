@@ -1,6 +1,6 @@
 {
   "name": "used-styles",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Collect styles used on to create a page",
   "main": "dist/es5/index.js",
   "scripts": {
