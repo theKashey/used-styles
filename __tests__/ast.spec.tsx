@@ -11,7 +11,7 @@ describe('test ast', () => {
       }
       
       .d ~ .e:not(focused){ 
-        display: block;
+        display: block !important;
         position: relative;
         width: calc(100% - 10px);
       }

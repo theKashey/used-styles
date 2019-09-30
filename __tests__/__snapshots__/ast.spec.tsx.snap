@@ -37,10 +37,12 @@ Object {
       "id": 1,
       "rules": Array [
         Object {
+          "important": undefined,
           "prop": "border",
           "value": "1px solid",
         },
         Object {
+          "important": undefined,
           "prop": "margin",
           "value": "6px 10px",
         },
@@ -58,14 +60,17 @@ Object {
       "id": 2,
       "rules": Array [
         Object {
+          "important": true,
           "prop": "display",
           "value": "block",
         },
         Object {
+          "important": undefined,
           "prop": "position",
           "value": "relative",
         },
         Object {
+          "important": undefined,
           "prop": "width",
           "value": "calc(100% - 10px)",
         },
@@ -83,6 +88,7 @@ Object {
       "id": 3,
       "rules": Array [
         Object {
+          "important": undefined,
           "prop": "position",
           "value": "absolute",
         },
@@ -100,6 +106,7 @@ Object {
       "id": 4,
       "rules": Array [
         Object {
+          "important": undefined,
           "prop": "position",
           "value": "relative",
         },
@@ -117,6 +124,7 @@ Object {
       "id": 5,
       "rules": Array [
         Object {
+          "important": undefined,
           "prop": "color",
           "value": "rightColor",
         },
@@ -134,6 +142,7 @@ Object {
       "id": 6,
       "rules": Array [
         Object {
+          "important": undefined,
           "prop": "color",
           "value": "red",
         },
@@ -249,7 +258,7 @@ margin: 6px 10px; }
 `;
 
 exports[`test ast should remap simple style 1`] = `
-".d ~ .e:not(focused) { display: block;
+".d ~ .e:not(focused) { display: block !important;
 position: relative;
 width: calc(100% - 10px); }
 "

@@ -3,6 +3,7 @@ import {CodeLocation} from "./ranges";
 export interface StyleRule {
   prop: string;
   value: string;
+  important: boolean;
 }
 
 export interface StyleSelector {

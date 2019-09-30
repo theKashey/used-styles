@@ -34,10 +34,14 @@ const getPostfix = (rule: string) => {
 let bodyCounter = 1;
 
 const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
-  const d = Object.values(bodies).find(bodyDecl => rangesIntervalEqual(bodyDecl, decl));
+  const d = Object
+    .values(bodies)
+    .find(bodyDecl => rangesIntervalEqual(bodyDecl, decl));
+
   if (d) {
     return d;
   }
+
   decl.id = bodyCounter++;
   bodies[decl.id] = decl;
   return decl;
@@ -55,7 +59,6 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   root.walkAtRules(rule => {
     if (rule.name != 'media') {
       atParents.add(rule);
-      //atRules[rule.params] = atRules[rule.params] || []
       atRules/*[rule.params]*/.push({
         kind: rule.name,
         id: rule.params,
@@ -86,11 +89,11 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
           start: createRange(Infinity, Infinity),
           end: createRange(0, 0),
         };
-        rule.walkDecls(({prop, value, source}) => {
+        rule.walkDecls(({prop, value, source, important}) => {
           delc.start = localRangeMin(delc.start, source.start);
           delc.end = localRangeMax(delc.end, source.end);
           delc.rules.push({
-            prop, value
+            prop, value, important
           });
         });
 
