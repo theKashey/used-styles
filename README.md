@@ -294,6 +294,20 @@ htmlStream.on('end', () => {
 > This example is taken from [Parcel-SSR-example](https://github.com/theKashey/react-imported-component/tree/master/examples/SSR/parcel-react-ssr)
 from __react-imported-component__.
 
+# Hybrid usage
+The advanced pattern described in [Optimizing CSS Delivery](https://dev.to/thekashey/optimising-css-delivery-57eh) article proposes to:
+- inline critical CSS for a first time customers
+- use cached `.css` files for recurring
+
+This library does not provide a way to distinguish "one" cohort of customers from another, although, provides an API to optimize the delivery.
+
+- use `createCriticalStyleStream`/`getCriticalStyles` to __inline__ critical CSS
+- use `createStyleStream`/`getUsedStyles` to use `.css` files
+- use `alterProjectStyles` with `filter` options to create two different sets of styles: not yet _cache_ set for `critical` styles, and the _cached_ ones for `used`.
+- yes - you have to use or two transformers, or call two functions, one after another.
+
+> Theoretically - all styles "critical" now, are "cached" ones next view. 
+
 # Performance
 Almost unmeasurable. It's a simple and single RegExp, which is not comparable to the React Render itself.
 

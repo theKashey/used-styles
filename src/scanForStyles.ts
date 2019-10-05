@@ -8,6 +8,7 @@ import {StyleDef, StyleDefinition, StyleFiles, StylesLookupTable, SyncStyleDefin
 import {mapStyles} from "./parser/utils";
 import {buildAst} from "./parser/toAst";
 import {StyleAst} from "./parser/ast";
+import {assertIsReady} from "./utils";
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
@@ -114,7 +115,7 @@ export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: st
 
     const styleFiles: StyleFiles = {};
     // prefill the obiect to pin keys ordering
-    files.map( file => styleFiles[relative(rootDir, file)] = undefined as any);
+    files.map(file => styleFiles[relative(rootDir, file)] = undefined as any);
 
     await Promise.all(
       files.map(async (file) => {
@@ -138,3 +139,31 @@ export function discoverProjectStyles(rootDir: string, fileFilter: (fileName: st
 
   return result;
 }
+
+export interface AlterOptions {
+  // filters available styles
+  filter(style: string): boolean,
+}
+
+export const alterProjectStyles = (def: StyleDefinition, options: AlterOptions): StyleDefinition => {
+  assertIsReady(def);
+
+  return {
+    ...def,
+    ast: Object.keys(def.ast).reduce((acc, file) => {
+      const astFile = def.ast[file];
+      const shouldRemove = (
+        !options.filter || !options.filter(file)
+      );
+
+      // dont add this file to the result file list
+      if (shouldRemove) {
+        return acc;
+      }
+
+      acc[file] = astFile;
+
+      return acc;
+    }, {} as StyleAst)
+  }
+};

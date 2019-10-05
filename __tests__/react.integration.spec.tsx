@@ -9,7 +9,7 @@ import {
   parseProjectStyles,
   createLink,
   getCriticalStyles,
-  discoverProjectStyles, getUsedStyles
+  discoverProjectStyles, getUsedStyles, alterProjectStyles
 } from "../src";
 import {StyleDefinition} from "../src/types";
 
@@ -17,7 +17,7 @@ describe('File based css stream', () => {
   let styles: StyleDefinition;
 
   beforeEach(() => {
-    styles = discoverProjectStyles(resolve(__dirname ,'css'), name => {
+    styles = discoverProjectStyles(resolve(__dirname, 'css'), name => {
       const match = name.match(/file(\d+).css/);
       return match && +match[1];
     });
@@ -25,6 +25,26 @@ describe('File based css stream', () => {
 
   it('fail: should throw if not ready', () => {
     expect(() => getUsedStyles("", styles)).toThrow();
+  });
+
+  it('skip: test', async () => {
+    await styles;
+    const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
+    const s2 = getCriticalStyles('<div class="class2 someclass">',
+      alterProjectStyles(styles, {filter: (x) => x.indexOf('file2') !== 0})
+    );
+    const s3 = getCriticalStyles('<div class="class2 someclass">',
+      alterProjectStyles(
+        alterProjectStyles(styles, {filter: (x) => x.indexOf('file2') !== 0}),
+        {filter: (x) => x.indexOf('file1') !== 0}
+      )
+    );
+
+    expect(s1).not.toBe(s2);
+    expect(s2).not.toBe(s3);
+    expect(s1).toMatch(/data-used-styles=\"file1.css,file2.css\"/);
+    expect(s2).toMatch(/data-used-styles=\"file1.css\"/);
+    expect(s3).toBe('');
   });
 
   it('memoization: test', async () => {
