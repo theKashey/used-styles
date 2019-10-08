@@ -16,6 +16,8 @@
 Detects used `css` files from the given HTML, and/or __inlines critical styles__.
 Supports sync or __stream__ rendering. 
 
+Read more about critical style extraction and this library: https://dev.to/thekashey/optimising-css-delivery-57eh
+
 ## Code splitting
 This is all about code splitting, Server Side Rendering and React, even if React has nothing to do with this library.
 
