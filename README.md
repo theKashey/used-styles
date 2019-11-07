@@ -19,54 +19,31 @@ Supports sync or __stream__ rendering.
 
 Read more about critical style extraction and this library: https://dev.to/thekashey/optimising-css-delivery-57eh
 
-## Code splitting
-This is all about code splitting, Server Side Rendering and React, even if React has nothing to do with this library.
+- 🚀 Super Fast - no browser, no jsdom, no runtime transformations
+- 💪 API - it's no more than an API - integrates with everything
+- 🤝 Works with `strings` and `streams`
+- ⏳ Supports preloading for the real style files
 
-Code splitting is a good feature, and SSR is also awesome, but then you have
-to load all the used `scripts` on the client, before making a page alive.
-Everybody is talking not about `.css`, but only about `.js`. 
-
-That's done, in a different ways. That's not a big task, as long as the _usage_ of code splitted blocks
-is _trackable_ - you are using it, and components defined inside. 
-
-CSS is harder - you might just use random classes and what next? You are just importing CSS here and where,
-sometimes indirectly, and there is no way to understand what's happening.
-
-> While it's possible for webpack to add a `Link` to document header once some `Component` uses some `Style`,
-you can't do the same in the __concurrent__ server environment - there is no <head/> to add a Link.
-
-Code splitting libraries solved it straight forward - by building resource graph, and fetching all
-bound resources to that graph, but tracking is hard, and quite bound to the bundler, and could delay content sending.
-
-## Solution
-1. Scan all `.css` files, extracting all the style names.
-2. Scan resulting `html`, finding all the `classNames` used.
-3a. Calculate all styles you need to render a given HTML.
-3b. Calculate all the files you shall send to a client.
-4. Inject styles or links
-5. Hoist or remove styles on clientside startup 
-
-> Bonus: Do the same for streams.
-
-> Bonus: Do it only for really `used styled`, not just imported somewhere. 
+## How it works
+1. Scans all `.css` files, extracting all the style names.
+2. Scans resulting `html`, finding all the `classNames` used.
+3. Here there are two options:
+3a. Calculate all __styles__ you need to render a given HTML.
+3b. Calculate all the style __files__ you have send to a client.
+4. Inject `<styles>` or `<links>`
+5. After page load hoist or removes critical styles replacing them by the "real" ones.
 
 ## Limitation
-In the performance sake `used-styles` inlines a bit more styles than it should - 
-it's just harder to understand what shall be done.
+For the performance sake `used-styles` inlines a bit more styles than it should - it inlines everything it would be "not fast" to remove.
 - inlines all `@keyframe` animations
-- inlines all `html, body` and other simple selectors (aka css-reset)
-- inlines all rules matching last part of a selector
-
-> And, hopefully
-
-- __inlines all classes used in HTML code__
+- inlines all `html, body` and other tag-based selectors (hello css-reset)
+- inlines all rules matching last part of a selector (`.a .b` would be included if `.b` was used but `.a` was not)
 
 
 ### Speed
 >Speed, I am speed!
 
-For the 516kb page, which needs 80ms to renderToString resulting time for `getCriticalRules`(very expensive operation)
-would be around __4ms__.
+For the 516kb page, which needs __80ms__ to `renderToString`(React) resulting time for the `getCriticalRules`(very expensive operation) would be around __4ms__.
 
 # API
 ## Discovery API
@@ -321,7 +298,9 @@ Almost unmeasurable. It's a simple and single RegExp, which is not comparable to
 - [critical](https://github.com/addyosmani/critical) - a super slow puppetter based solution. Able to extract critical style "above the fold". 
 - [inline-critical](https://github.com/bezoerb/inline-critical) - slow jsdom based solution. Generates one big style block at the beginning of a file, and replaces all other `links` by async variants. However, it does not detect any critical or used styles in provided HTML - HTML is used only as a output target. 👎
 
-`used-styles` is faster that libraries listed above, optimized for multiple runs, as well as
+- [critters-webpack-plugun](https://github.com/GoogleChromeLabs/critters) - is the nearest analog of used-styles, build on almost same principles.
+
+`used-styles` is faster that libraries listed above, and optimized for multiple runs.
 
 # License
 MIT 
