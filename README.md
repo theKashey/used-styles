@@ -82,8 +82,8 @@ Use to get used styled from render result or a stream
 3. `getCriticalStyles(html, StyleDef) : string` - returns all used selectors and other applicable rules, wrapped with `style`
 4. `getCriticalRules(html, StyleDef): string` - __the same__, but without `<style>` tag, letting you handle in a way you want
 
-5. `createStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<links`
-5. `createCriticalStyleStream(lookupTable, callback(fileName):void): TransformStream` - creates Transform stream - will inject `<styles`.
+5. `createStyleStream(markupStream, lookupTable, callback(fileName):void): TransformStream` - pipes markup stream with Transform stream - will inject `<links`
+5. `createCriticalStyleStream(markupStream, lookupTable, callback(fileName):void): TransformStream` - pipes mark stream with Transform stream - will inject `<styles`.
 
 ### React
 There are only two things about react:
@@ -154,17 +154,9 @@ In case or React rendering you may use __interleaved streaming__, which would no
 It's quite similar how StyledComponents works
 ```js
 import {discoverProjectStyles, createLink, createStyleStream} from 'used-styles';
-import MultiStream from 'multistream';
 
 // generate lookup table on server start
 const stylesLookup = discoverProjectStyles('./build'); // __dirname usually
-
-// small utility for "readable" streams
-const readable = () => {
-  const s = new Readable();
-  s._read = () => true;
-  return s;
-};
 
 async function MyRender() {
   // render App
@@ -172,31 +164,24 @@ async function MyRender() {
 
   const lookup = await stylesLookup;
   // create a style steam
-  const styledStream = createStyleStream(lookup, (style) => {
+  const styledStream = createStyleStream(htmlStream, lookup, (style) => {
       // _return_ link tag, and it will be appended to the stream output
       return createLink(`dist/${style}`) // <link href="dist/mystyle.css />
   });
 
   // or create critical CSS stream - it will inline all styles
-  const styledStream = createCriticalStyleStream(projectStyles); // <style>.myClass {...
+  const styledStream = createCriticalStyleStream(htmlStream, lookup); // <style>.myClass {...
 
   // allow client to start loading js bundle
   res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
-
-  const middleStream = readableString('</head><body><div id="root">');
-  const endStream = readableString('</head><body>');
+  res.write('</head><body><div id="root">');
   
-  // concatenate all steams together
-  const streams = [
-      middleStream, // end of a header, and start of a body
-    styledStream, // the main content
-    endStream,    // closing tags
-];
+  styledStream.pipe(res, {
+    end: false
+  })
 
-MultiStream(streams).pipe(res);
+  styledStream.on('end', () => res.end('</div></head><body>'))
 
-// start by piping react and styled transform stream
-htmlStream.pipe(styledStream);
 ```
 
 __!! THIS IS NOT THE END !!__ Interleaving links and react output would break a client side rehydration,
@@ -235,18 +220,11 @@ import MultiStream from 'multistream';
 // generate lookup table on server start
 const lookup = await discoverProjectStyles('./build'); // __dirname usually
 
-// small utility for "readable" streams
-const readable = () => {
-  const s = new Readable();
-  s._read = () => true;
-  return s;
-};
-
 // render App
 const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
 // create a style steam
-const styledStream = createStyleStream(lookup, (style) => {
+const styledStream = createStyleStream(htmlStream, lookup, (style) => {
     // emit a line to header Stream
     headerStream.push(createLink(`dist/${style}`));
     // or

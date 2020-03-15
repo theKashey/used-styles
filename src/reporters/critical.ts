@@ -1,5 +1,6 @@
 import {CacheLine, StyleDefinition} from "../types";
-import {Transform} from "stream";
+import { Transform } from "stream";
+
 import {criticalStylesToString, extractAllUnmatchableAsString, wrapInStyle} from "../getCSS";
 import {assertIsReady, createLine, findLastBrace} from "../utils";
 import {isReact} from "../config";
@@ -28,7 +29,7 @@ export const processReact = (chunk: string, line: CacheLine, callback: (styles: 
   return chunk;
 };
 
-export const createCriticalStyleStream = (def: StyleDefinition) => {
+export const createCriticalStyleStream = (reactStream: NodeJS.ReadableStream, def: StyleDefinition) => {
   const line = createLine();
   let injections: (string | undefined)[] = [];
 
@@ -49,7 +50,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
 
   let tick = 0;
 
-  return new Transform({
+  const transformer =  new Transform({
     // transform() is called with each chunk of data
     transform(chunk, _, _callback) {
       assertIsReady(def);
@@ -73,4 +74,11 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
       cb(undefined, line.tail);
     }
   });
+
+  reactStream.on('error', err => {
+    // forward the error to the transform stream
+    transformer.emit('error', err);
+  });
+
+  return reactStream.pipe(transformer);
 };
