@@ -32,16 +32,7 @@ describe('css stream', () => {
   });
 
   it('React.renderToStream', async () => {
-    const styles = {};
-    const cssStream = createStyleStream(createLookup({
-      a: ['file1'],
-      b: ['file1', 'file2'],
-      zz: ['file3'],
-      notused: ['file4']
-    }), style => {
-      styles[style] = (styles[style] || 0) + 1;
-    });
-    const output = renderToStaticNodeStream(
+    const reactStream = renderToStaticNodeStream(
       <div>
         <div className="a">
           <div className="a b c">
@@ -55,6 +46,17 @@ describe('css stream', () => {
       </div>
     );
 
+    const styles = {};
+    const cssStream = createStyleStream(reactStream, createLookup({
+      a: ['file1'],
+      b: ['file1', 'file2'],
+      zz: ['file3'],
+      notused: ['file4']
+    }), style => {
+      styles[style] = (styles[style] || 0) + 1;
+    });
+
+
     const streamString = async (readStream) => {
       const result = [];
       for await (const chunk of readStream) {
@@ -64,8 +66,8 @@ describe('css stream', () => {
     };
 
     const [tr, base] = await Promise.all([
-      streamString(output.pipe(cssStream)),
-      streamString(output)
+      streamString(cssStream),
+      streamString(reactStream)
     ]);
 
     expect(base).toEqual(tr);

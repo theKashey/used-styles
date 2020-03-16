@@ -120,9 +120,7 @@ describe('React css stream', () => {
   enableReactOptimization();
 
   it('React.renderToStream', async () => {
-    const criticalStream = createCriticalStyleStream(lookup);
-    const cssStream = createStyleStream(lookup, createLink);
-    const output = renderToStaticNodeStream(
+    const reactStream = renderToStaticNodeStream(
       <div>
         <div className="a">
           <div className="a b c">
@@ -137,6 +135,10 @@ describe('React css stream', () => {
       </div>
     );
 
+    const criticalStream = createCriticalStyleStream(reactStream, lookup);
+    const cssStream = createStyleStream(reactStream, lookup, createLink);
+
+
     const streamString = async (readStream) => {
       const result = [];
       for await (const chunk of readStream) {
@@ -145,9 +147,9 @@ describe('React css stream', () => {
       return result.join('');
     };
 
-    const htmlCritical_a = streamString(output.pipe(criticalStream));
-    const htmlLink_a = streamString(output.pipe(cssStream));
-    const html_a = streamString(output);
+    const htmlCritical_a = streamString(criticalStream);
+    const htmlLink_a = streamString(cssStream);
+    const html_a = streamString(reactStream);
 
     const html = await html_a;
     const htmlCritical = await htmlCritical_a;

@@ -28,7 +28,7 @@ export const processReact = (chunk: string, line: CacheLine, def: StyleDefinitio
   return chunk;
 };
 
-export const createStyleStream = (def: StyleDefinition, callback: (styleFile: string) => string | undefined | void) => {
+export const createStyleStream = (stream: NodeJS.ReadableStream, def: StyleDefinition, callback: (styleFile: string) => string | undefined | void) => {
 
   const line = createLine();
   const styles: Record<string, boolean> = {};
@@ -47,7 +47,7 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
       })
   };
 
-  return new Transform({
+  const transformer =  new Transform({
     // transform() is called with each chunk of data
     transform(chunk, _, _callback) {
       assertIsReady(def);
@@ -63,4 +63,11 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
       cb(undefined, line.tail);
     }
   });
+
+  stream.on('error', err => {
+    // forward the error to the transform stream
+    transformer.emit('error', err);
+  });
+
+  return stream.pipe(transformer);
 };
