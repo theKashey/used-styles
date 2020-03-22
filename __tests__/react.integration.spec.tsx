@@ -128,28 +128,10 @@ describe('React css stream', () => {
 
   enableReactOptimization();
 
-  it('React.renderToStream', async () => {
-    const criticalStream = createCriticalStyleStream(lookup);
-    const cssStream = createStyleStream(lookup, createLink);
-    const output = renderToStaticNodeStream(
-      <div>
-        <div className="a">
-          <div className="a b c">
-            <div className="xx">
-              {Array(1000)
-                .fill(1)
-                .map((_, index) => (
-                  <div key={index}>
-                    <span className="d">{index}</span>
-                  </div>
-                ))}
-            </div>
-            datacontent
-          </div>
-          <div className="zz"></div>
-        </div>
-      </div>
-    );
+  describe('React.renderToStream', async () => {
+    let criticalStream: any;
+    let cssStream: any;
+    let output: any;
 
     const streamString = async (readStream: NodeJS.ReadableStream) => {
       const result = [];
@@ -159,34 +141,67 @@ describe('React css stream', () => {
       return result.join('');
     };
 
-    // tslint:disable variable-name
-    const htmlCritical_a = streamString(output.pipe(criticalStream));
-    const htmlLink_a = streamString(output.pipe(cssStream));
-    const html_a = streamString(output);
-    // tslint:enable
+    it('setup', () => {
+      criticalStream = createCriticalStyleStream(lookup);
+      cssStream = createStyleStream(lookup, createLink);
+      output = renderToStaticNodeStream(
+        <div>
+          <div className="a">
+            <div className="a b c">
+              <div className="xx">
+                {Array(1000)
+                  .fill(1)
+                  .map((_, index) => (
+                    <div key={index}>
+                      <span className="d">{index}</span>
+                    </div>
+                  ))}
+              </div>
+              datacontent
+            </div>
+            <div className="zz"></div>
+          </div>
+        </div>
+      );
+    });
 
-    const htmlCritical = await htmlCritical_a;
-    const htmlLink = await htmlLink_a;
-    const html = await html_a;
+    let htmlCritical: string = '';
+    let htmlLink: string = '';
+    let html: string = '';
 
-    expect(html).toMatch(/datacontent/);
-    expect(htmlCritical).toMatch(/datacontent/);
-    expect(htmlLink).toMatch(/datacontent/);
+    it('render', async () => {
+      // tslint:disable variable-name
+      const htmlCritical_a = streamString(output.pipe(criticalStream));
+      const htmlLink_a = streamString(output.pipe(cssStream));
+      const html_a = streamString(output);
+      // tslint:enable
 
-    expect(htmlCritical).toMatch(/rightColor/);
-    expect(htmlCritical).toMatch(/blueMark/);
-    expect(htmlCritical).toMatch(/rightInput/);
-    expect(htmlCritical).not.toMatch(/wrong/);
+      htmlCritical = await htmlCritical_a;
+      htmlLink = await htmlLink_a;
+      html = await html_a;
+    });
 
-    expect(htmlLink).toMatch(/file1/);
-    expect(htmlLink).toMatch(/file2/);
-    expect(htmlLink).not.toMatch(/file3/);
+    it('expectations', () => {
+      expect(html).toMatch(/datacontent/);
+      expect(htmlCritical).toMatch(/datacontent/);
+      expect(htmlLink).toMatch(/datacontent/);
 
-    expect(htmlCritical).toMatchSnapshot();
-    expect(htmlLink).toMatchSnapshot();
+      expect(htmlCritical).toMatch(/rightColor/);
+      expect(htmlCritical).toMatch(/blueMark/);
+      expect(htmlCritical).toMatch(/rightInput/);
+      expect(htmlCritical).not.toMatch(/wrong/);
 
-    const critical = getCriticalStyles(html, lookup);
+      expect(htmlLink).toMatch(/file1/);
+      expect(htmlLink).toMatch(/file2/);
+      expect(htmlLink).not.toMatch(/file3/);
 
-    expect(critical).toMatchSnapshot();
+      expect(htmlCritical).toMatchSnapshot();
+      expect(htmlLink).toMatchSnapshot();
+    });
+
+    it('critical', () => {
+      const critical = getCriticalStyles(html, lookup);
+      expect(critical).toMatchSnapshot();
+    });
   });
 });

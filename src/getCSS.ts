@@ -108,11 +108,11 @@ export const extractAllUnmatchable = kashe((def: StyleDefinition): StyleChunk[] 
     .map(x => x as StyleChunk)
 );
 
-export const extractAllUnmatchableAsString = kashe(
-  (def: StyleDefinition) =>
-    // wrapInStyle(
-    extractAllUnmatchable(def).reduce((acc, { css }) => acc + css, '')
-  // )
+export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
+  wrapInStyle(
+    extractAllUnmatchable(def).reduce((acc, { css }) => acc + css, ''),
+    ['_unmatched']
+  )
 );
 
 const criticalRulesToStyle = (styles: StyleChunk[], urlPrefix = ''): string =>
