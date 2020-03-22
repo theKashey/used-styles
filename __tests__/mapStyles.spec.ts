@@ -1,4 +1,4 @@
-import {mapSelector} from "../src/parser/utils";
+import { mapSelector } from '../src/parser/utils';
 
 describe('test map selector', () => {
   it('should return the single style', () => {

@@ -1,38 +1,38 @@
-import * as React from 'react';
-import {remapStyles} from "../src/scanForStyles";
+import { remapStyles } from '../src/scanForStyles';
 
 describe('scanForStyles', () => {
   it('should map simple style', () => {
     const styles = {};
-    remapStyles({
-        'a': '.a{}, .b .c{}, .d>.e:not(focused){}',
-        'b': '.a {}, .f~.g{}, @media (screen) { .media { } }',
+    remapStyles(
+      {
+        a: '.a{}, .b .c{}, .d>.e:not(focused){}',
+        b: '.a {}, .f~.g{}, @media (screen) { .media { } }',
       },
       styles
     );
     expect(styles).toEqual({
-      "a": {
-        "a": true,
-        "b": true,
+      a: {
+        a: true,
+        b: true,
       },
-      "b": {
-        "a": true,
+      b: {
+        a: true,
       },
-      "c": {
-        "a": true,
+      c: {
+        a: true,
       },
-      "d": {
-        "a": true,
+      d: {
+        a: true,
       },
-      "e": {
-        "a": true,
+      e: {
+        a: true,
       },
-      "f": {
-        "b": true
+      f: {
+        b: true,
       },
-      "g": {
-        "b": true
+      g: {
+        b: true,
       },
-    })
+    });
   });
 });

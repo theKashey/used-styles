@@ -1,8 +1,8 @@
 import * as postcss from 'postcss';
-import {AtRule, Rule} from 'postcss';
-import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from "./ranges";
-import {mapSelector} from "./utils";
-import {AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from "./ast";
+import { AtRule, Rule } from 'postcss';
+import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
+import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
+import { mapSelector } from './utils';
 
 const getAtRule = (rule: AtRule | Rule): string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
@@ -30,13 +30,10 @@ const getPostfix = (rule: string) => {
   return rule.substr(getBreak(rule)).trim();
 };
 
-
 let bodyCounter = 1;
 
 const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
-  const d = Object
-    .values(bodies)
-    .find(bodyDecl => rangesIntervalEqual(bodyDecl, decl));
+  const d = Object.values(bodies).find(bodyDecl => rangesIntervalEqual(bodyDecl, decl));
 
   if (d) {
     return d;
@@ -57,13 +54,14 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const atParents = new Set<any>();
 
   root.walkAtRules(rule => {
-    if (rule.name != 'media') {
+    if (rule.name !== 'media') {
       atParents.add(rule);
-      atRules/*[rule.params]*/.push({
-        kind: rule.name,
-        id: rule.params,
-        css: rule.toString(),
-      });
+      atRules /*[rule.params]*/
+        .push({
+          kind: rule.name,
+          id: rule.params,
+          css: rule.toString(),
+        });
     }
   });
 
@@ -77,7 +75,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
       .forEach(selector => {
         const stand: StyleSelector = {
           media: getAtRule(rule),
-          selector: selector,
+          selector,
           pieces: mapSelector(selector),
           postfix: getPostfix(selector),
           declaration: 0,
@@ -89,12 +87,16 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
           start: createRange(Infinity, Infinity),
           end: createRange(0, 0),
         };
-        rule.walkDecls(({prop, value, source, important}) => {
-          delc.start = localRangeMin(delc.start, source.start);
-          delc.end = localRangeMax(delc.end, source.end);
-          delc.rules.push({
-            prop, value, important
-          });
+        rule.walkDecls(({ prop, value, source, important }) => {
+          if (source) {
+            delc.start = localRangeMin(delc.start, source.start!);
+            delc.end = localRangeMax(delc.end, source.end!);
+            delc.rules.push({
+              prop,
+              value,
+              important,
+            });
+          }
         });
 
         stand.declaration = assignBody(delc, bodies).id;

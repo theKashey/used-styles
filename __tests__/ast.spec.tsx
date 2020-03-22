@@ -1,9 +1,9 @@
-import * as React from 'react';
-import {buildAst} from "../src/parser/toAst";
-import {fromAst} from "../src/parser/fromAst";
+import { fromAst } from '../src/parser/fromAst';
+import { buildAst } from '../src/parser/toAst';
 
 describe('test ast', () => {
-  const CSS = `
+  describe('smoke', () => {
+    const CSS = `
       .a,
       .b .c {
         border:1px solid;
@@ -28,35 +28,36 @@ describe('test ast', () => {
       }
     `;
 
-  it('should map simple style', () => {
-    const ast = buildAst(CSS);
-    expect(ast).toMatchSnapshot();
-  });
+    it('should map simple style', () => {
+      const ast = buildAst(CSS);
+      expect(ast).toMatchSnapshot();
+    });
 
-  it('should remap simple style', () => {
-    const ast = buildAst(CSS);
-    const css = fromAst(['e'], ast);
-    expect(css).toMatchSnapshot();
-  });
+    it('should remap simple style', () => {
+      const ast = buildAst(CSS);
+      const css = fromAst(['e'], ast);
+      expect(css).toMatchSnapshot();
+    });
 
-  it('dont map unused styles', () => {
-    const ast = buildAst(CSS);
-    const cssFalsePositive = fromAst(['d', 'b'], ast);
-    expect(cssFalsePositive).toBe('.b { color: rightColor; }\n');
-  });
+    it('dont map unused styles', () => {
+      const ast = buildAst(CSS);
+      const cssFalsePositive = fromAst(['d', 'b'], ast);
+      expect(cssFalsePositive).toBe('.b { color: rightColor; }\n');
+    });
 
-  it('handles double classes', () => {
-    const ast = buildAst(CSS);
-    const single = fromAst(['ble'], ast);
-    expect(single).toBe('');
-    const double = fromAst(['ble', 'dou'], ast);
-    expect(double).toBe('.dou.ble { color: red; }\n');
-  });
+    it('handles double classes', () => {
+      const ast = buildAst(CSS);
+      const single = fromAst(['ble'], ast);
+      expect(single).toBe('');
+      const double = fromAst(['ble', 'dou'], ast);
+      expect(double).toBe('.dou.ble { color: red; }\n');
+    });
 
-  it('should remap complex style', () => {
-    const ast = buildAst(CSS);
-    const css = fromAst(['a', 'c'], ast);
-    expect(css).toMatchSnapshot();
+    it('should remap complex style', () => {
+      const ast = buildAst(CSS);
+      const css = fromAst(['a', 'c'], ast);
+      expect(css).toMatchSnapshot();
+    });
   });
 
   it('should handle keyframes and media', () => {
@@ -71,5 +72,5 @@ describe('test ast', () => {
 
     const ast = buildAst(CSS);
     expect(ast).toMatchSnapshot();
-  })
+  });
 });

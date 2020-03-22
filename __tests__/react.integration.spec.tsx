@@ -1,17 +1,19 @@
+import { resolve } from 'path';
 import * as React from 'react';
-import {renderToStaticNodeStream, renderToString} from 'react-dom/server';
-import {resolve} from 'path';
+import { renderToStaticNodeStream, renderToString } from 'react-dom/server';
 
 import {
-  enableReactOptimization,
+  alterProjectStyles,
   createCriticalStyleStream,
-  createStyleStream,
-  parseProjectStyles,
   createLink,
+  createStyleStream,
+  discoverProjectStyles,
+  enableReactOptimization,
   getCriticalStyles,
-  discoverProjectStyles, getUsedStyles, alterProjectStyles
-} from "../src";
-import {StyleDefinition} from "../src/types";
+  getUsedStyles,
+  parseProjectStyles,
+} from '../src';
+import { StyleDefinition } from '../src/types';
 
 describe('File based css stream', () => {
   let styles: StyleDefinition;
@@ -24,20 +26,21 @@ describe('File based css stream', () => {
   });
 
   it('fail: should throw if not ready', () => {
-    expect(() => getUsedStyles("", styles)).toThrow();
+    expect(() => getUsedStyles('', styles)).toThrow();
   });
 
   it('skip: test', async () => {
     await styles;
     const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
-    const s2 = getCriticalStyles('<div class="class2 someclass">',
-      alterProjectStyles(styles, {filter: (x) => x.indexOf('file2') !== 0})
+    const s2 = getCriticalStyles(
+      '<div class="class2 someclass">',
+      alterProjectStyles(styles, { filter: x => x.indexOf('file2') !== 0 })
     );
-    const s3 = getCriticalStyles('<div class="class2 someclass">',
-      alterProjectStyles(
-        alterProjectStyles(styles, {filter: (x) => x.indexOf('file2') !== 0}),
-        {filter: (x) => x.indexOf('file1') !== 0}
-      )
+    const s3 = getCriticalStyles(
+      '<div class="class2 someclass">',
+      alterProjectStyles(alterProjectStyles(styles, { filter: x => x.indexOf('file2') !== 0 }), {
+        filter: x => x.indexOf('file1') !== 0,
+      })
     );
 
     expect(s1).not.toBe(s2);
@@ -50,7 +53,7 @@ describe('File based css stream', () => {
   it('memoization: test', async () => {
     await styles;
     const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
-    delete styles.ast['file2'];
+    delete styles.ast.file2;
     const s2 = getCriticalStyles('<div class="class2 someclass">', styles);
     const s3 = getCriticalStyles('<div class="class2 somethingNotUsed">', styles);
 
@@ -60,15 +63,21 @@ describe('File based css stream', () => {
 
   it('ok: test', async () => {
     await styles;
-    expect(getUsedStyles("", styles)).toEqual(['file1.css']);
-    expect(getCriticalStyles("", styles)).toMatchSnapshot();
+    expect(getUsedStyles('', styles)).toEqual(['file1.css']);
+    expect(getCriticalStyles('', styles)).toMatchSnapshot();
 
     const output = renderToString(
       <div>
         <div className="only someclass">
           <div className="another class11">
-            {Array(10).fill(1).map((x, index) => <div key={index}><span className="d">{index}</span></div>)}
-            <div className="class1"/>
+            {Array(10)
+              .fill(1)
+              .map((_, index) => (
+                <div key={index}>
+                  <span className="d">{index}</span>
+                </div>
+              ))}
+            <div className="class1" />
           </div>
         </div>
       </div>
@@ -127,17 +136,22 @@ describe('React css stream', () => {
         <div className="a">
           <div className="a b c">
             <div className="xx">
-              {Array(1000).fill(1).map((x, index) => <div key={index}><span className="d">{index}</span></div>)}
+              {Array(1000)
+                .fill(1)
+                .map((_, index) => (
+                  <div key={index}>
+                    <span className="d">{index}</span>
+                  </div>
+                ))}
             </div>
             datacontent
           </div>
-          <div className="zz">
-          </div>
+          <div className="zz"></div>
         </div>
       </div>
     );
 
-    const streamString = async (readStream) => {
+    const streamString = async (readStream: NodeJS.ReadableStream) => {
       const result = [];
       for await (const chunk of readStream) {
         result.push(chunk);
@@ -145,13 +159,15 @@ describe('React css stream', () => {
       return result.join('');
     };
 
+    // tslint:disable variable-name
     const htmlCritical_a = streamString(output.pipe(criticalStream));
     const htmlLink_a = streamString(output.pipe(cssStream));
     const html_a = streamString(output);
+    // tslint:enable
 
-    const html = await html_a;
     const htmlCritical = await htmlCritical_a;
     const htmlLink = await htmlLink_a;
+    const html = await html_a;
 
     expect(html).toMatch(/datacontent/);
     expect(htmlCritical).toMatch(/datacontent/);
@@ -172,5 +188,5 @@ describe('React css stream', () => {
     const critical = getCriticalStyles(html, lookup);
 
     expect(critical).toMatchSnapshot();
-  })
+  });
 });

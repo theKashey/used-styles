@@ -1,3 +1,4 @@
+/* tslint:disable */
 function areInputsEqual(newInputs: any[], lastInputs: any[]) {
   if (newInputs.length !== lastInputs.length) {
     return false;
@@ -11,7 +12,6 @@ function areInputsEqual(newInputs: any[], lastInputs: any[]) {
 }
 
 export function memoizeOne<T extends () => any>(resultFn: T): T {
-  let lastThis: any;
   let lastArgs: any[] = [];
   let lastResult: any;
   let calledOnce = false;
@@ -21,12 +21,11 @@ export function memoizeOne<T extends () => any>(resultFn: T): T {
     for (let _i = 0; _i < arguments.length; _i++) {
       newArgs[_i] = arguments[_i];
     }
-    if (calledOnce && lastThis === this && areInputsEqual(newArgs, lastArgs)) {
+    if (calledOnce && areInputsEqual(newArgs, lastArgs)) {
       return lastResult;
     }
-    lastResult = resultFn.apply(this, newArgs);
+    lastResult = resultFn.apply(undefined, newArgs as any);
     calledOnce = true;
-    lastThis = this;
     lastArgs = newArgs;
     return lastResult;
   }

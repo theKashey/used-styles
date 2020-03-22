@@ -1,4 +1,4 @@
-import {CodeLocation} from "./ranges";
+import { CodeLocation } from './ranges';
 
 export interface StyleRule {
   prop: string;
@@ -18,7 +18,7 @@ export interface StyleSelector {
 
 export interface StyleBody {
   id: number;
-  rules: Array<StyleRule>;
+  rules: StyleRule[];
   start: CodeLocation;
   end: CodeLocation;
 }
