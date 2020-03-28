@@ -128,7 +128,7 @@ describe('React css stream', () => {
 
   enableReactOptimization();
 
-  describe('React.renderToStream', async () => {
+  describe('React.renderToStream', () => {
     let criticalStream: any;
     let cssStream: any;
     let output: any;
