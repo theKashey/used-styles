@@ -187,15 +187,15 @@ async function MyRender() {
   // render App
   const htmlStream = ReactDOM.renderToNodeStream(<App />)
 
-  const lookup = await stylesLookup;
+  await stylesLookup;
   // create a style steam
-  const styledStream = createStyleStream(lookup, (style) => {
+  const styledStream = createStyleStream(stylesLookup, (style) => {
       // _return_ link tag, and it will be appended to the stream output
       return createLink(`dist/${style}`) // <link href="dist/mystyle.css />
   });
 
   // or create critical CSS stream - it will inline all styles
-  const styledStream = createCriticalStyleStream(projectStyles); // <style>.myClass {...
+  const styledStream = createCriticalStyleStream(stylesLookup); // <style>.myClass {...
 
   // allow client to start loading js bundle
   res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
