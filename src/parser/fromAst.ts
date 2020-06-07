@@ -44,8 +44,11 @@ const findUnmatchableSelectors = (selectors: StyleSelector[]): StyleSelector[] =
 export const fromAst = (rules: string[], def: SingleStyleAst, filter?: (selector: string) => boolean) => {
   const blocks: StyleSelector[] = [];
   const lookup: SelectorLookUp = new Set(rules);
-
-  blocks.push(...findMatchingSelectors(lookup, def.selectors).filter(block => !filter || filter(block.selector)));
+  blocks.push(
+    ...findMatchingSelectors(lookup, def.selectors).filter(
+      block => !filter || filter(`${block.selector}${block.media.join('')}`)
+    )
+  );
 
   return convertToString(blocks, def);
 };

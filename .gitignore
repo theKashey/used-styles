@@ -4,3 +4,4 @@ node_modules/
 coverage
 .DS_Store
 .nyc_output
+.yalc
