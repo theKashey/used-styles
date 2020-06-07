@@ -1,4 +1,5 @@
 import { kashe } from 'kashe';
+import { StyleAst } from './parser/ast';
 import { extractUnmatchable, fromAst, getUnmatchableRules } from './parser/fromAst';
 import { FlagType, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
 import { assertIsReady, getStylesInText, unique } from './utils';
@@ -92,10 +93,10 @@ export const wrapInStyle = (styles: string, usedStyles: string[] = []) =>
       }">${styles}</style>`
     : '';
 
-export const extractAllUnmatchable = kashe((def: StyleDefinition): StyleChunk[] =>
-  Object.keys(def.ast || {})
+export const extractUnmatchableFromAst = kashe((ast: StyleAst): StyleChunk[] =>
+  Object.keys(ast || {})
     .map(file => {
-      const css = extractUnmatchable(def.ast[file]);
+      const css = extractUnmatchable(ast[file]);
       if (css) {
         return {
           file,
@@ -107,6 +108,8 @@ export const extractAllUnmatchable = kashe((def: StyleDefinition): StyleChunk[] 
     .filter(x => !!x)
     .map(x => x as StyleChunk)
 );
+
+export const extractAllUnmatchable = (def: StyleDefinition): StyleChunk[] => extractUnmatchableFromAst(def.ast);
 
 export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
   wrapInStyle(
