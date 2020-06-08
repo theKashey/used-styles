@@ -1,7 +1,7 @@
 import { kashe } from 'kashe';
 import { StyleAst } from './parser/ast';
 import { extractUnmatchable, fromAst, getUnmatchableRules } from './parser/fromAst';
-import { FlagType, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
+import { FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
 import { assertIsReady, getStylesInText, unique } from './utils';
 
 export const getUnusableStyles = kashe(
@@ -74,17 +74,15 @@ export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
   return getUsedStylesIn(getStylesInText(str), def);
 };
 
-const astToStyles = kashe(
-  (styles: string[], def: StyleDefinition, filter?: (selector: string) => boolean): StyleChunk[] => {
-    const { ast } = def;
-    const { fetches, usage } = astToUsedStyles(styles, def);
+const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: SelectionFilter): StyleChunk[] => {
+  const { ast } = def;
+  const { fetches, usage } = astToUsedStyles(styles, def);
 
-    return usage.map(file => ({
-      file,
-      css: fromAst(Object.keys(fetches[file]), ast[file], filter),
-    }));
-  }
-);
+  return usage.map(file => ({
+    file,
+    css: fromAst(Object.keys(fetches[file]), ast[file], filter),
+  }));
+});
 
 export const wrapInStyle = (styles: string, usedStyles: string[] = []) =>
   styles
@@ -121,11 +119,7 @@ export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
 const criticalRulesToStyle = (styles: StyleChunk[], urlPrefix = ''): string =>
   wrapInStyle(styles.map(({ css }) => css).join(''), unique(styles.map(({ file }) => `${urlPrefix}${file}`)));
 
-export const criticalStylesToString = (
-  str: string,
-  def: StyleDefinition,
-  filter?: (selector: string) => boolean
-): string => {
+export const criticalStylesToString = (str: string, def: StyleDefinition, filter?: SelectionFilter): string => {
   assertIsReady(def);
   return criticalRulesToStyle(astToStyles(getStylesInText(str), def, filter), def.urlPrefix);
 };

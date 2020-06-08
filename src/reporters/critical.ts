@@ -1,6 +1,7 @@
 import { Transform } from 'stream';
 import { isReact } from '../config';
 import { criticalStylesToString, extractAllUnmatchableAsString } from '../getCSS';
+import { StyleSelector } from '../parser/ast';
 import { CacheLine, StyleDefinition } from '../types';
 import { assertIsReady, createLine, findLastBrace } from '../utils';
 
@@ -30,13 +31,13 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
 
-  const usedSelectors = new Set<string>();
+  const usedSelectors = new WeakSet<any>();
 
-  const filter = (selector: string) => {
-    if (usedSelectors.has(selector)) {
+  const filter = (_: any, rule: StyleSelector) => {
+    if (usedSelectors.has(rule)) {
       return false;
     }
-    usedSelectors.add(selector);
+    usedSelectors.add(rule);
     return true;
   };
 

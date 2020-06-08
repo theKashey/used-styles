@@ -1,4 +1,4 @@
-import {StyleAst} from "./parser/ast";
+import { StyleAst, StyleSelector } from './parser/ast';
 
 export type StylesLookupTable = Record<string, string[]>;
 
@@ -19,11 +19,11 @@ export interface SyncStyleDefinition {
 }
 
 export interface StyleChunk {
-  file: string,
+  file: string;
   css: string;
 }
 
-export type FlagType = Record<string, boolean>
+export type FlagType = Record<string, boolean>;
 
 export interface StyleDefinition {
   isReady: boolean;
@@ -32,3 +32,10 @@ export interface StyleDefinition {
   urlPrefix: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
 }
+
+/**
+ * A function used to control which selectors should be used
+ * @param selector - DEPRECATED
+ * @param {StyleSelector} rule - a reference to a rule
+ */
+export type SelectionFilter = (selector: string, rule: StyleSelector) => boolean;

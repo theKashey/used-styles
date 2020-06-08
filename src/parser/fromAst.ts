@@ -1,5 +1,6 @@
 import { kashe } from 'kashe';
 import * as postcss from 'postcss';
+import { SelectionFilter } from '../types';
 import { SingleStyleAst, StyleBody, StyleRule, StyleSelector } from './ast';
 
 const separator = process.env.NODE_ENV === 'production' ? '' : '\n';
@@ -41,13 +42,11 @@ const findMatchingSelectors = (rules: SelectorLookUp, selectors: StyleSelector[]
 const findUnmatchableSelectors = (selectors: StyleSelector[]): StyleSelector[] =>
   selectors.filter(rule => rule.pieces.length === 0);
 
-export const fromAst = (rules: string[], def: SingleStyleAst, filter?: (selector: string) => boolean) => {
+export const fromAst = (rules: string[], def: SingleStyleAst, filter?: SelectionFilter) => {
   const blocks: StyleSelector[] = [];
   const lookup: SelectorLookUp = new Set(rules);
   blocks.push(
-    ...findMatchingSelectors(lookup, def.selectors).filter(
-      block => !filter || filter(`${block.selector}${block.media.join('')}`)
-    )
+    ...findMatchingSelectors(lookup, def.selectors).filter(block => !filter || filter(block.selector, block))
   );
 
   return convertToString(blocks, def);
