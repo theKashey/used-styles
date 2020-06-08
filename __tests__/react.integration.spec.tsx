@@ -105,6 +105,11 @@ describe('React css stream', () => {
     .a, .b, .input { color: rightColor }
     .a2, .b1, .input { color: wrong }
     input { color: rightInput }
+    
+    .responsive { color: red; }
+    @media (print) {
+      .responsive { color: blue; }
+    }
   `;
 
   const file2 = `
@@ -148,7 +153,7 @@ describe('React css stream', () => {
         <div>
           <div className="a">
             <div className="a b c">
-              <div className="xx">
+              <div className="xx responsive">
                 {Array(1000)
                   .fill(1)
                   .map((_, index) => (
