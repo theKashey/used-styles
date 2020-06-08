@@ -1,5 +1,8 @@
+// @ts-ignore
+import * as crc32 from 'crc-32';
 import * as postcss from 'postcss';
 import { AtRule, Rule } from 'postcss';
+
 import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
 import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
 import { mapSelector } from './utils';
@@ -44,6 +47,10 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
   return decl;
 };
 
+const hashBody = (body: StyleBody) => {
+  return crc32.str(JSON.stringify(body.rules)).toString(32);
+};
+
 export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
@@ -79,6 +86,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
           pieces: mapSelector(selector),
           postfix: getPostfix(selector),
           declaration: 0,
+          hash: selector,
         };
 
         const delc: StyleBody = {
@@ -100,6 +108,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
+        stand.hash = `${selector}${hashBody(delc)}`;
 
         selectors.push(stand);
       });

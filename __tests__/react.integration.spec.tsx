@@ -115,6 +115,7 @@ describe('React css stream', () => {
   const file2 = `
     .c2, .d1, .input { marker: wrong }
     .c, .d { marker: blueMark }
+    .responsive { color: red; }
   `;
 
   const file3 = `

@@ -31,13 +31,13 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
 
-  const usedSelectors = new WeakSet<any>();
+  const usedSelectors = new Set<string>();
 
   const filter = (_: any, rule: StyleSelector) => {
-    if (usedSelectors.has(rule)) {
+    if (usedSelectors.has(rule.hash)) {
       return false;
     }
-    usedSelectors.add(rule);
+    usedSelectors.add(rule.hash);
     return true;
   };
 

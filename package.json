@@ -24,8 +24,8 @@
   "author": "theKashey <thekashey@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@theuiteam/lib-builder": "^0.0.9",
-    "@size-limit/preset-small-lib": "^2.1.6"
+    "@size-limit/preset-small-lib": "^2.1.6",
+    "@theuiteam/lib-builder": "^0.0.9"
   },
   "engines": {
     "node": ">=10"
@@ -46,14 +46,15 @@
     "code splitting"
   ],
   "dependencies": {
-    "tslib": "^1.10.0",
+    "crc-32": "^1.2.0",
     "kashe": "^0.2.0",
     "postcss": "^7.0.17",
-    "scan-directory": "^1.0.0"
+    "scan-directory": "^1.0.0",
+    "tslib": "^1.10.0"
   },
   "peerDependencies": {
-    "react": "^16.9.0",
-    "@types/react": "^16.9.0"
+    "@types/react": "^16.9.0",
+    "react": "^16.9.0"
   },
   "husky": {
     "hooks": {

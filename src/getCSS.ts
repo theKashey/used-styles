@@ -1,5 +1,5 @@
 import { kashe } from 'kashe';
-import { StyleAst } from './parser/ast';
+import { StyleAst, StyleSelector } from './parser/ast';
 import { extractUnmatchable, fromAst, getUnmatchableRules } from './parser/fromAst';
 import { FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
 import { assertIsReady, getStylesInText, unique } from './utils';
@@ -124,7 +124,7 @@ export const criticalStylesToString = (str: string, def: StyleDefinition, filter
   return criticalRulesToStyle(astToStyles(getStylesInText(str), def, filter), def.urlPrefix);
 };
 
-const getRawCriticalRules = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean) => {
+const getRawCriticalRules = (str: string, def: StyleDefinition, filter?: SelectionFilter) => {
   assertIsReady(def);
   return [...extractAllUnmatchable(def), ...astToStyles(getStylesInText(str), def, filter)];
 };
@@ -136,5 +136,16 @@ export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (se
     .join('');
 };
 
-export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string =>
-  criticalRulesToStyle(getRawCriticalRules(str, def, filter), def.urlPrefix);
+export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: SelectionFilter): string => {
+  const usedSelectors = new Set<string>();
+
+  const defaultFilter = (_: any, rule: StyleSelector) => {
+    if (usedSelectors.has(rule.hash)) {
+      return false;
+    }
+    usedSelectors.add(rule.hash);
+    return true;
+  };
+
+  return criticalRulesToStyle(getRawCriticalRules(str, def, filter || defaultFilter), def.urlPrefix);
+};

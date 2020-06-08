@@ -14,6 +14,7 @@ export interface StyleSelector {
   media: string[];
 
   declaration: number;
+  hash: string;
 }
 
 export interface StyleBody {
