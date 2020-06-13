@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>used-style</h1>
+  <h1>used-styles</h1>
   <br/>
   Get all the styles, you have used to render a page.<br/>
   (without any puppeteer involved)
