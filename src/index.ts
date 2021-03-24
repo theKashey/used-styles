@@ -6,6 +6,8 @@ import { alterProjectStyles, discoverProjectStyles, parseProjectStyles } from '.
 import { enableReactOptimization } from './config';
 import { createLink } from './createLink';
 
+export { UsedTypes, StyleDefinition } from './types';
+
 export {
   discoverProjectStyles,
   parseProjectStyles,
