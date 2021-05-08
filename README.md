@@ -81,6 +81,9 @@ const styleData = discoverProjectStyles(resolve('build'), name => {
 });
 ```
 
+> ⚠️ generally speaking - this approach working only unless there are no order-sensive styles from different chunks applied to a single DOM Element.
+> Quite often it never happen, but if you are looking for a better way - follow to [#26](https://github.com/theKashey/used-styles/issues/26) ☣️
+
 ## Scanners
 
 Use to get used styled from render result or a stream
