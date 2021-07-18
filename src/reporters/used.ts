@@ -2,7 +2,9 @@ import { Transform } from 'stream';
 import { isReact } from '../config';
 import { getUsedStyles } from '../getCSS';
 import { CacheLine, StyleDefinition, UsedTypes } from '../types';
-import { assertIsReady, createLine, findLastBrace } from '../utils';
+import { assertIsReady } from '../utils/async';
+import { createLine } from '../utils/cache';
+import { findLastBrace } from '../utils/string';
 
 export const process = (
   chunk: string,

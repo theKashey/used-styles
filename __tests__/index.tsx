@@ -1,4 +1,4 @@
-import { remapStyles } from '../src/scanForStyles';
+import { remapStyles } from '../src/utils/style';
 
 describe('scanForStyles', () => {
   it('should map simple style', () => {

@@ -1,8 +1,11 @@
 import { kashe } from 'kashe';
-import { StyleAst, StyleSelector } from './parser/ast';
+import { StyleAst } from './parser/ast';
 import { extractUnmatchable, fromAst, getUnmatchableRules } from './parser/fromAst';
 import { FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
-import { assertIsReady, getStylesInText, unique } from './utils';
+import { assertIsReady } from './utils/async';
+import { createUsedFilter } from './utils/cache';
+import { unique } from './utils/order';
+import { getStylesInText } from './utils/string';
 
 export const getUnusableStyles = kashe(
   (def: StyleDefinition): UsedTypesRef =>
@@ -69,9 +72,12 @@ const getUsedStylesIn = kashe(
   }
 );
 
-export const getUsedStyles = (str: string, def: StyleDefinition): UsedTypes => {
+/**
+ * returns names of the style files for a given HTML and style definitions
+ */
+export const getUsedStyles = (htmlCode: string, def: StyleDefinition): UsedTypes => {
   assertIsReady(def);
-  return getUsedStylesIn(getStylesInText(str), def);
+  return getUsedStylesIn(getStylesInText(htmlCode), def);
 };
 
 const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: SelectionFilter): StyleChunk[] => {
@@ -116,36 +122,48 @@ export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
   )
 );
 
+/**
+ * just wraps with <style
+ */
 const criticalRulesToStyle = (styles: StyleChunk[], urlPrefix = ''): string =>
   wrapInStyle(styles.map(({ css }) => css).join(''), unique(styles.map(({ file }) => `${urlPrefix}${file}`)));
 
-export const criticalStylesToString = (str: string, def: StyleDefinition, filter?: SelectionFilter): string => {
+export const criticalStylesToString = (html: string, def: StyleDefinition, filter?: SelectionFilter): string => {
   assertIsReady(def);
-  return criticalRulesToStyle(astToStyles(getStylesInText(str), def, filter), def.urlPrefix);
+  return criticalRulesToStyle(astToStyles(getStylesInText(html), def, filter), def.urlPrefix);
 };
 
-const getRawCriticalRules = (str: string, def: StyleDefinition, filter?: SelectionFilter) => {
+const getRawCriticalRules = (html: string, def: StyleDefinition, filter?: SelectionFilter) => {
   assertIsReady(def);
-  return [...extractAllUnmatchable(def), ...astToStyles(getStylesInText(str), def, filter)];
+  return [...extractAllUnmatchable(def), ...astToStyles(getStylesInText(html), def, filter)];
 };
 
-export const getCriticalRules = (str: string, def: StyleDefinition, filter?: (selector: string) => boolean): string => {
+/**
+ * returns critical rules(selector) used in a given HTML code
+ * @see {@link getRawCriticalRules} for lower level API
+ */
+export const getCriticalRules = (
+  html: string,
+  def: StyleDefinition,
+  filter: SelectionFilter = createUsedFilter()
+): string => {
   assertIsReady(def);
-  return getRawCriticalRules(str, def, filter)
-    .map(({ css }) => css)
+  return getRawCriticalRules(html, def, filter)
+    .map(({ css, file }) => `/* ${file} */\n${css}`)
     .join('');
 };
 
-export const getCriticalStyles = (str: string, def: StyleDefinition, filter?: SelectionFilter): string => {
-  const usedSelectors = new Set<string>();
-
-  const defaultFilter = (_: any, rule: StyleSelector) => {
-    if (usedSelectors.has(rule.hash)) {
-      return false;
-    }
-    usedSelectors.add(rule.hash);
-    return true;
-  };
-
-  return criticalRulesToStyle(getRawCriticalRules(str, def, filter || defaultFilter), def.urlPrefix);
+/**
+ * Generates "ready for use" styles for a given HTML
+ * @see {@link getCriticalRules} for lower level API
+ * @param html
+ * @param def
+ * @param filter
+ */
+export const getCriticalStyles = (
+  html: string,
+  def: StyleDefinition,
+  filter: SelectionFilter = createUsedFilter()
+): string => {
+  return criticalRulesToStyle(getRawCriticalRules(html, def, filter), def.urlPrefix);
 };

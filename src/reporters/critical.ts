@@ -1,9 +1,10 @@
 import { Transform } from 'stream';
 import { isReact } from '../config';
 import { criticalStylesToString, extractAllUnmatchableAsString } from '../getCSS';
-import { StyleSelector } from '../parser/ast';
 import { CacheLine, StyleDefinition } from '../types';
-import { assertIsReady, createLine, findLastBrace } from '../utils';
+import { assertIsReady } from '../utils/async';
+import { createLine, createUsedFilter } from '../utils/cache';
+import { findLastBrace } from '../utils/string';
 
 export const process = (chunk: string, line: CacheLine, callback: (styles: string) => void): string =>
   isReact() ? processReact(chunk, line, callback) : processPlain(chunk, line, callback);
@@ -31,15 +32,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
 
-  const usedSelectors = new Set<string>();
-
-  const filter = (_: any, rule: StyleSelector) => {
-    if (usedSelectors.has(rule.hash)) {
-      return false;
-    }
-    usedSelectors.add(rule.hash);
-    return true;
-  };
+  const filter = createUsedFilter();
 
   const styleCallback = (content: string) => {
     const style = criticalStylesToString(content, def, filter);

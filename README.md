@@ -88,7 +88,7 @@ const styleData = discoverProjectStyles(resolve('build'), name => {
 
 Use to get used styled from render result or a stream
 
-2. `getUsedStyles(html, StyleDef): string[]` - returns all used files, you have to import them
+2. `getUsedStyles(html, StyleDef): string[]` - returns all used **files**, you will need to import them
 3. `getCriticalStyles(html, StyleDef) : string` - returns all used selectors and other applicable rules, wrapped with `style`
 4. `getCriticalRules(html, StyleDef): string` - **the same**, but without `<style>` tag, letting you handle in a way you want
 

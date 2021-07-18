@@ -1,31 +1,18 @@
 import { readFile } from 'fs';
-import { extname, relative } from 'path';
+import { extname, join, relative } from 'path';
 // @ts-ignore
 import scanDirectory from 'scan-directory';
 import { promisify } from 'util';
 
 import { StyleAst } from './parser/ast';
 import { buildAst } from './parser/toAst';
-import { mapStyles } from './parser/utils';
-import { StyleDef, StyleDefinition, StyleFiles, StylesLookupTable, SyncStyleDefinition } from './types';
-import { assertIsReady } from './utils';
+import { StyleDefinition, StyleFiles, StylesLookupTable, SyncStyleDefinition } from './types';
+import { flattenOrder } from './utils/order';
 
 const RESOLVE_EXTENSIONS = ['.css'];
 
 const pReadFile = promisify(readFile);
 export const getFileContent = (file: string) => pReadFile(file, 'utf8');
-
-export const remapStyles = (data: StyleFiles, result: StyleDef) =>
-  Object.keys(data)
-    .map(file => ({ file, styles: mapStyles(data[file]) }))
-    .forEach(({ file, styles }) =>
-      styles.forEach(className => {
-        if (!result[className]) {
-          result[className] = {};
-        }
-        result[className][file] = true;
-      })
-    );
 
 const toFlattenArray = (ast: StyleAst): StylesLookupTable =>
   Object.keys(ast).reduce((acc, file) => {
@@ -46,6 +33,10 @@ const astFromFiles = (fileDate: StyleFiles): StyleAst =>
     return acc;
   }, {} as StyleAst);
 
+/**
+ * (synchronously) creates style definition from a given set of style data
+ * @param data a data in form of {fileName: fileContent}
+ */
 export function parseProjectStyles(data: StyleFiles): SyncStyleDefinition {
   const ast = astFromFiles(data);
 
@@ -56,32 +47,14 @@ export function parseProjectStyles(data: StyleFiles): SyncStyleDefinition {
   };
 }
 
-export const getProjectStyles = () => {
-  throw new Error('use `discoverProjectStyles` instead of getProjectStyles');
-};
-
 const passAll = () => true;
 
-const flattenOrder = (order: boolean | number | null): number => {
-  if (typeof order === 'number' || typeof order === 'string') {
-    return +order;
-  }
-  if (order === true) {
-    return 0;
-  }
-
-  return Number.NaN;
-};
-
-interface FlattenFileOrder {
+export interface FlattenFileOrder {
   file: string;
   order: number;
 }
 
-export function discoverProjectStyles(
-  rootDir: string,
-  fileFilter: (fileName: string) => boolean | number | null = passAll
-): StyleDefinition {
+const createAwaitableResult = () => {
   let resolve: any;
   let reject: any;
   const awaiter = new Promise<void>((res, rej) => {
@@ -96,10 +69,36 @@ export function discoverProjectStyles(
     },
   } as StyleDefinition;
 
+  return {
+    result,
+    resolve,
+    reject,
+  };
+};
+
+/**
+ * Loads a given set of styles. This function is useful for custom scenarios and dev mode, where no files are emitted on disk
+ * @see {@link discoverProjectStyles} to automatically load styles from the build folder
+ * @param getStyleNames - a style name generator
+ * @param loader - a data loader
+ * @param fileFilter - filter and order corrector
+ * @example
+ * ```ts
+ * loadStyleDefinitions(
+ *  async () => ['style1.css'],
+ *  (styleName) => fetch(CDN+styleName),
+ * )
+ * ```
+ */
+export function loadStyleDefinitions(
+  getStyleNames: () => string[] | Promise<string[]>,
+  loader: (style: string) => string | Promise<string>,
+  fileFilter: (fileName: string) => boolean | number | null = passAll
+): StyleDefinition {
+  const { resolve, reject, result } = createAwaitableResult();
+
   async function scanner() {
-    const files: string[] = ((await scanDirectory(rootDir, undefined, () => false)) as string[])
-      .filter(name => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
-      .sort()
+    const files: string[] = (await getStyleNames())
       .map(file => ({
         file,
         order: flattenOrder(fileFilter(file)),
@@ -110,11 +109,11 @@ export function discoverProjectStyles(
 
     const styleFiles: StyleFiles = {};
     // prefill the obiect to pin keys ordering
-    files.map(file => (styleFiles[relative(rootDir, file)] = undefined as any));
+    files.map(file => (styleFiles[file] = undefined as any));
 
     await Promise.all(
       files.map(async file => {
-        styleFiles[relative(rootDir, file)] = await getFileContent(file);
+        styleFiles[file] = await loader(file);
       })
     );
 
@@ -137,28 +136,23 @@ export function discoverProjectStyles(
   return result;
 }
 
-export interface AlterOptions {
-  // filters available styles
-  filter(style: string): boolean;
+/**
+ * auto discovers style files in a given dir applying a given "ordering" filter
+ * @see Use {@link loadStyleDefinitions} as a full customizable variant
+ * @param rootDir - location of the build artefact
+ * @param fileFilter - filter and ordering, return false to skip the file, return true or null to not change file order, sort index otherwise
+ */
+export function discoverProjectStyles(
+  rootDir: string,
+  fileFilter: (fileName: string) => boolean | number | null = passAll
+): StyleDefinition {
+  return loadStyleDefinitions(
+    async () =>
+      ((await scanDirectory(rootDir, undefined, () => false)) as string[])
+        .filter(name => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+        .map(file => relative(rootDir, file))
+        .sort(),
+    fileName => getFileContent(join(rootDir, fileName)),
+    fileFilter
+  );
 }
-
-export const alterProjectStyles = (def: StyleDefinition, options: AlterOptions): StyleDefinition => {
-  assertIsReady(def);
-
-  return {
-    ...def,
-    ast: Object.keys(def.ast).reduce((acc, file) => {
-      const astFile = def.ast[file];
-      const shouldRemove = !options.filter || !options.filter(file);
-
-      // dont add this file to the result file list
-      if (shouldRemove) {
-        return acc;
-      }
-
-      acc[file] = astFile;
-
-      return acc;
-    }, {} as StyleAst),
-  };
-};
