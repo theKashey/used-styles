@@ -1,3 +1,18 @@
+## [2.1.4](https://github.com/theKashey/used-styles/compare/v2.1.3...v2.1.4) (2021-03-24)
+
+## [2.1.3](https://github.com/theKashey/used-styles/compare/v2.1.2...v2.1.3) (2020-06-08)
+
+### Bug Fixes
+
+- use selector hash instead of weak reference ([2859ac5](https://github.com/theKashey/used-styles/commit/2859ac514c9329c177e0782756fd0f210b68c784))
+
+## [2.1.2](https://github.com/theKashey/used-styles/compare/v2.1.1...v2.1.2) (2020-06-08)
+
+### Bug Fixes
+
+- consider media query when filtering used selectors ([5c4d37b](https://github.com/theKashey/used-styles/commit/5c4d37bfc304c85cce0f92a5d92b07f786996559))
+- readme - lookup usage ([f02ac12](https://github.com/theKashey/used-styles/commit/f02ac12a402af046587cade42e7bff37de7429c4))
+
 ## [2.1.1](https://github.com/theKashey/used-styles/compare/v2.1.0...v2.1.1) (2020-04-02)
 
 ### Bug Fixes
