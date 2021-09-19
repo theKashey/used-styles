@@ -1,4 +1,5 @@
 import { Transform } from 'stream';
+
 import { isReact } from '../config';
 import { criticalStylesToString, extractAllUnmatchableAsString } from '../getCSS';
 import { CacheLine, StyleDefinition } from '../types';
@@ -18,6 +19,7 @@ export const processPlain = (chunk: string, line: CacheLine, callback: (styles: 
   callback(usedString);
 
   line.tail = data.substring(lastBrace);
+
   return usedString;
 };
 
@@ -52,6 +54,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
         const staticStyles = extractAllUnmatchableAsString(def);
         staticStyles && injections.push(staticStyles);
       }
+
       tick++;
 
       const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, styleCallback), 'utf-8');

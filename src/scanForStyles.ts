@@ -1,8 +1,10 @@
 import { readFile } from 'fs';
 import { extname, join, relative } from 'path';
+
 // @ts-ignore
-import scanDirectory from 'scan-directory';
 import { promisify } from 'util';
+
+import scanDirectory from 'scan-directory';
 
 import { StyleAst } from './parser/ast';
 import { buildAst } from './parser/toAst';
@@ -12,24 +14,28 @@ import { flattenOrder } from './utils/order';
 const RESOLVE_EXTENSIONS = ['.css'];
 
 const pReadFile = promisify(readFile);
+
 export const getFileContent = (file: string) => pReadFile(file, 'utf8');
 
 const toFlattenArray = (ast: StyleAst): StylesLookupTable =>
   Object.keys(ast).reduce((acc, file) => {
-    ast[file].selectors.forEach(sel => {
-      sel.pieces.forEach(className => {
+    ast[file].selectors.forEach((sel) => {
+      sel.pieces.forEach((className) => {
         if (!acc[className]) {
           acc[className] = [];
         }
+
         acc[className].push(file);
       });
     });
+
     return acc;
   }, {} as StylesLookupTable);
 
 const astFromFiles = (fileDate: StyleFiles): StyleAst =>
   Object.keys(fileDate).reduce((acc, file) => {
     acc[file] = buildAst(fileDate[file], file);
+
     return acc;
   }, {} as StyleAst);
 
@@ -99,7 +105,7 @@ export function loadStyleDefinitions(
 
   async function scanner() {
     const files: string[] = (await getStyleNames())
-      .map(file => ({
+      .map((file) => ({
         file,
         order: flattenOrder(fileFilter(file)),
       }))
@@ -109,10 +115,10 @@ export function loadStyleDefinitions(
 
     const styleFiles: StyleFiles = {};
     // prefill the obiect to pin keys ordering
-    files.map(file => (styleFiles[file] = undefined as any));
+    files.map((file) => (styleFiles[file] = undefined as any));
 
     await Promise.all(
-      files.map(async file => {
+      files.map(async (file) => {
         styleFiles[file] = await loader(file);
       })
     );
@@ -121,11 +127,11 @@ export function loadStyleDefinitions(
   }
 
   scanner().then(
-    styles => {
+    (styles) => {
       Object.assign(result, styles);
       resolve();
     },
-    e => {
+    (e) => {
       reject(e);
       // tslint:disable-next-line:no-console
       console.error(e);
@@ -149,10 +155,10 @@ export function discoverProjectStyles(
   return loadStyleDefinitions(
     async () =>
       ((await scanDirectory(rootDir, undefined, () => false)) as string[])
-        .filter(name => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
-        .map(file => relative(rootDir, file))
+        .filter((name) => RESOLVE_EXTENSIONS.indexOf(extname(name)) >= 0)
+        .map((file) => relative(rootDir, file))
         .sort(),
-    fileName => getFileContent(join(rootDir, fileName)),
+    (fileName) => getFileContent(join(rootDir, fileName)),
     fileFilter
   );
 }

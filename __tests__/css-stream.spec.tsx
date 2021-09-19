@@ -9,11 +9,12 @@ describe('css stream', () => {
     isReady: true,
     ast: Object.keys(lookup).reduce((acc, file) => {
       lookup[file].forEach(
-        f =>
+        (f) =>
           (acc[f] = {
             selectors: [],
           })
       );
+
       return acc;
     }, {} as any),
     lookup,
@@ -42,7 +43,7 @@ describe('css stream', () => {
         zz: ['file3'],
         notused: ['file4'],
       }),
-      style => {
+      (style) => {
         styles[style] = (styles[style] || 0) + 1;
       }
     );
@@ -65,15 +66,18 @@ describe('css stream', () => {
 
     const streamString = async (readStream: NodeJS.ReadableStream) => {
       const result = [];
+
       for await (const chunk of readStream) {
         result.push(chunk);
       }
+
       return result.join('');
     };
 
     const [tr, base] = await Promise.all([streamString(output.pipe(cssStream)), streamString(output)]);
 
     expect(base).toEqual(tr);
+
     expect(styles).toEqual({
       file1: 1,
       file2: 1,

@@ -4,7 +4,7 @@ export interface LocalCodeLocation {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface CodeLocation extends LocalCodeLocation {}
+export type CodeLocation = LocalCodeLocation;
 
 export interface CodeLocationRange {
   start: CodeLocation;

@@ -1,4 +1,5 @@
 import { resolve } from 'path';
+
 import * as React from 'react';
 import { renderToStaticNodeStream, renderToString } from 'react-dom/server';
 
@@ -19,8 +20,9 @@ describe('File based css stream', () => {
   let styles: StyleDefinition;
 
   beforeEach(() => {
-    styles = discoverProjectStyles(resolve(__dirname, 'css'), name => {
+    styles = discoverProjectStyles(resolve(__dirname, 'css'), (name) => {
       const match = name.match(/file(\d+).css/);
+
       return match && +match[1];
     });
   });
@@ -31,15 +33,16 @@ describe('File based css stream', () => {
 
   it('skip: test', async () => {
     await styles;
+
     const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
     const s2 = getCriticalStyles(
       '<div class="class2 someclass">',
-      alterProjectStyles(styles, { filter: x => x.indexOf('file2') !== 0 })
+      alterProjectStyles(styles, { filter: (x) => x.indexOf('file2') !== 0 })
     );
     const s3 = getCriticalStyles(
       '<div class="class2 someclass">',
-      alterProjectStyles(alterProjectStyles(styles, { filter: x => x.indexOf('file2') !== 0 }), {
-        filter: x => x.indexOf('file1') !== 0,
+      alterProjectStyles(alterProjectStyles(styles, { filter: (x) => x.indexOf('file2') !== 0 }), {
+        filter: (x) => x.indexOf('file1') !== 0,
       })
     );
 
@@ -52,9 +55,11 @@ describe('File based css stream', () => {
 
   it('memoization: test', async () => {
     await styles;
+
     const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
     // @ts-expect-error
     delete styles.ast.file2;
+
     const s2 = getCriticalStyles('<div class="class2 someclass">', styles);
     const s3 = getCriticalStyles('<div class="class2 somethingNotUsed">', styles);
 
@@ -142,15 +147,18 @@ describe('React css stream', () => {
 
     const streamString = async (readStream: NodeJS.ReadableStream) => {
       const result = [];
+
       for await (const chunk of readStream) {
         result.push(chunk);
       }
+
       return result.join('');
     };
 
     it('setup', () => {
       criticalStream = createCriticalStyleStream(lookup);
       cssStream = createStyleStream(lookup, createLink);
+
       output = renderToStaticNodeStream(
         <div>
           <div className="a">
@@ -172,9 +180,9 @@ describe('React css stream', () => {
       );
     });
 
-    let htmlCritical: string = '';
-    let htmlLink: string = '';
-    let html: string = '';
+    let htmlCritical = '';
+    let htmlLink = '';
+    let html = '';
 
     it('render', async () => {
       // tslint:disable variable-name

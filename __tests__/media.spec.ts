@@ -40,6 +40,7 @@ describe('media selectors', () => {
 
   it('should extract unmatable parts', () => {
     const css = extractUnmatchableFromAst({ ast });
+
     expect(css[0].css).toEqual(`body { color: red; }
 input { color: rightColor; }
 `);
@@ -52,6 +53,7 @@ input { color: rightColor; }
 
   it('should use media if not used: case a', () => {
     const css = fromAst(['a'], ast);
+
     expect(css.trim()).toEqual(`.a { border: 2px solid; }
 
 @media only screen and (max-width: 600px) {
@@ -63,6 +65,7 @@ input { color: rightColor; }
 
   it('should use media if not used: case c', () => {
     const css = fromAst(['c'], ast);
+
     expect(css.trim()).toEqual(`@media only screen and (max-width: 600px) {
 .c { position: relative; }
 .c { color: red; }

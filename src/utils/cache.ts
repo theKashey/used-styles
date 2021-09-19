@@ -12,7 +12,9 @@ export const createUsedFilter = () => {
     if (usedSelectors.has(rule.hash)) {
       return false;
     }
+
     usedSelectors.add(rule.hash);
+
     return true;
   };
 };

@@ -3,12 +3,13 @@ import { StyleDef, StyleFiles } from '../types';
 
 export const remapStyles = (data: StyleFiles, result: StyleDef) =>
   Object.keys(data)
-    .map(file => ({ file, styles: mapStyles(data[file]) }))
+    .map((file) => ({ file, styles: mapStyles(data[file]) }))
     .forEach(({ file, styles }) =>
-      styles.forEach(className => {
+      styles.forEach((className) => {
         if (!result[className]) {
           result[className] = {};
         }
+
         result[className][file] = true;
       })
     );

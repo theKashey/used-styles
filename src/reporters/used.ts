@@ -1,4 +1,5 @@
 import { Transform } from 'stream';
+
 import { isReact } from '../config';
 import { getUsedStyles } from '../getCSS';
 import { CacheLine, StyleDefinition, UsedTypes } from '../types';
@@ -27,6 +28,7 @@ export const processPlain = (
   callback(getUsedStyles(usedString, def));
 
   line.tail = data.substring(lastBrace);
+
   return usedString;
 };
 
@@ -48,10 +50,12 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
   let injections: Array<string | undefined> = [];
 
   const cb = (newStyles: UsedTypes) => {
-    newStyles.forEach(style => {
+    newStyles.forEach((style) => {
       if (!styles[style]) {
         styles[style] = true;
+
         const result = callback(style);
+
         if (result) {
           injections.push(result);
         }
@@ -65,6 +69,7 @@ export const createStyleStream = (def: StyleDefinition, callback: (styleFile: st
     transform(chunk, _, _callback) {
       assertIsReady(def);
       injections = [];
+
       const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, def, cb), 'utf-8');
       _callback(undefined, injections.filter(Boolean).join('\n') + chunkData);
     },

@@ -49,6 +49,7 @@ describe('test ast', () => {
       const ast = buildAst(CSS);
       const single = fromAst(['ble'], ast);
       expect(single).toBe('');
+
       const double = fromAst(['ble', 'dou'], ast);
       expect(double).toBe('.dou.ble { color: red; }\n');
     });

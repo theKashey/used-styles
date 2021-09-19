@@ -3,6 +3,7 @@ import { remapStyles } from '../src/utils/style';
 describe('scanForStyles', () => {
   it('should map simple style', () => {
     const styles = {};
+
     remapStyles(
       {
         a: '.a{}, .b .c{}, .d>.e:not(focused){}',
@@ -10,6 +11,7 @@ describe('scanForStyles', () => {
       },
       styles
     );
+
     expect(styles).toEqual({
       a: {
         a: true,

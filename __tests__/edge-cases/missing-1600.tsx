@@ -1,5 +1,5 @@
-import { buildAst } from '../../src/parser/toAst';
 import { fromAst } from '../../src/parser/fromAst';
+import { buildAst } from '../../src/parser/toAst';
 import { createUsedFilter } from '../../src/utils/cache';
 
 describe('missing 1600px', () => {
@@ -30,6 +30,7 @@ describe('missing 1600px', () => {
     const ast = buildAst(CSS);
 
     const test = fromAst(['content'], ast, createUsedFilter());
+
     expect(test).toMatchInlineSnapshot(`
       ".content {  }
 

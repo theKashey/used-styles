@@ -1,16 +1,17 @@
 // @ts-ignore
 import * as crc32 from 'crc-32';
 import * as postcss from 'postcss';
-import {AtRule, Rule} from 'postcss';
+import { AtRule, Rule } from 'postcss';
 
-import {AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from './ast';
-import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from './ranges';
-import {mapSelector} from './utils';
+import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
+import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
+import { mapSelector } from './utils';
 
 const getAtRule = (rule: AtRule | Rule): string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
     return getAtRule(rule.parent as any).concat(rule.parent.params);
   }
+
   return [];
 };
 
@@ -21,11 +22,14 @@ const getBreak = (rule: string) => {
     rule.indexOf('~'),
     rule.indexOf('+'),
     rule.indexOf(':'),
-  ].filter(index => index > 0);
+  ].filter((index) => index > 0);
+
   if (breakPoints.length === 0) {
     return rule.length;
   }
+
   const min = Math.min(...breakPoints);
+
   return min ? min : rule.length;
 };
 
@@ -36,7 +40,7 @@ const getPostfix = (rule: string) => {
 let bodyCounter = 1;
 
 const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
-  const d = Object.values(bodies).find(bodyDecl => rangesIntervalEqual(bodyDecl, decl));
+  const d = Object.values(bodies).find((bodyDecl) => rangesIntervalEqual(bodyDecl, decl));
 
   if (d) {
     return d;
@@ -44,6 +48,7 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
 
   decl.id = bodyCounter++;
   bodies[decl.id] = decl;
+
   return decl;
 };
 
@@ -55,7 +60,7 @@ const hashBody = (body: StyleBody) => {
   return hashString(JSON.stringify(body.rules));
 };
 
-export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
+export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
   const atRules: AtRules = [];
@@ -64,12 +69,14 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
 
   const atParents = new Set<any>();
 
-  root.walkAtRules(rule => {
+  root.walkAtRules((rule) => {
     if (rule.name === 'charset') {
       return;
     }
+
     if (rule.name !== 'media') {
       atParents.add(rule);
+
       atRules /*[rule.params]*/
         .push({
           kind: rule.name,
@@ -79,14 +86,16 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
     }
   });
 
-  root.walkRules(rule => {
+  root.walkRules((rule) => {
     if (atParents.has(rule.parent)) {
       return;
     }
+
     const ruleSelectors = rule.selector.split(',');
+
     ruleSelectors
-      .map(sel => sel.trim())
-      .forEach(selector => {
+      .map((sel) => sel.trim())
+      .forEach((selector) => {
         const stand: StyleSelector = {
           media: getAtRule(rule),
           selector,
@@ -102,10 +111,12 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
           start: createRange(Infinity, Infinity),
           end: createRange(0, 0),
         };
-        rule.walkDecls(({prop, value, source, important}) => {
+
+        rule.walkDecls(({ prop, value, source, important }) => {
           if (source) {
             delc.start = localRangeMin(delc.start, source.start!);
             delc.end = localRangeMax(delc.end, source.end!);
+
             delc.rules.push({
               prop,
               value,
