@@ -25,13 +25,13 @@ export interface StyleChunk {
 
 export type FlagType = Record<string, boolean>;
 
-export interface StyleDefinition {
+export type StyleDefinition = Readonly<{
   isReady: boolean;
-  lookup: StylesLookupTable;
-  ast: StyleAst;
+  lookup: Readonly<StylesLookupTable>;
+  ast: Readonly<StyleAst>;
   urlPrefix: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
-}
+}>
 
 /**
  * A function used to control which selectors should be used

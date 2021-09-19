@@ -1,11 +1,11 @@
-import { kashe } from 'kashe';
-import { StyleAst } from './parser/ast';
-import { extractUnmatchable, fromAst, getUnmatchableRules } from './parser/fromAst';
-import { FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef } from './types';
-import { assertIsReady } from './utils/async';
-import { createUsedFilter } from './utils/cache';
-import { unique } from './utils/order';
-import { getStylesInText } from './utils/string';
+import {kashe} from 'kashe';
+import {StyleAst} from './parser/ast';
+import {extractUnmatchable, fromAst, getUnmatchableRules} from './parser/fromAst';
+import {FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, UsedTypesRef} from './types';
+import {assertIsReady} from './utils/async';
+import {createUsedFilter} from './utils/cache';
+import {unique} from './utils/order';
+import {getStylesInText} from './utils/string';
 
 export const getUnusableStyles = kashe(
   (def: StyleDefinition): UsedTypesRef =>
@@ -18,7 +18,7 @@ export const getUnusableStyles = kashe(
 );
 
 export const astToUsedStyles = kashe((styles: string[], def: StyleDefinition) => {
-  const { lookup, ast } = def;
+  const {lookup, ast} = def;
   const fetches: Record<string, FlagType> = {};
   const visitedStyles = new Set<string>();
 
@@ -52,7 +52,7 @@ export const astToUsedStyles = kashe((styles: string[], def: StyleDefinition) =>
 const getUsedStylesIn = kashe(
   (styles: string[], def: StyleDefinition): UsedTypes => {
     assertIsReady(def);
-    const { usage } = astToUsedStyles(styles, def);
+    const {usage} = astToUsedStyles(styles, def);
     const flags: FlagType = {
       ...getUnusableStyles(def),
       ...usage.reduce((acc, file) => {
@@ -81,8 +81,8 @@ export const getUsedStyles = (htmlCode: string, def: StyleDefinition): UsedTypes
 };
 
 const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: SelectionFilter): StyleChunk[] => {
-  const { ast } = def;
-  const { fetches, usage } = astToUsedStyles(styles, def);
+  const {ast} = def;
+  const {fetches, usage} = astToUsedStyles(styles, def);
 
   return usage.map(file => ({
     file,
@@ -93,14 +93,14 @@ const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: Sele
 export const wrapInStyle = (styles: string, usedStyles: string[] = []) =>
   styles
     ? `<style type="text/css" data-used-styles="${
-        usedStyles.length === 0 ? 'true' : usedStyles.join(',')
-      }">${styles}</style>`
+      usedStyles.length === 0 ? 'true' : usedStyles.join(',')
+    }">${styles}</style>`
     : '';
 
-export const extractUnmatchableFromAst = kashe((ast: StyleAst): StyleChunk[] =>
+export const extractUnmatchableFromAst = kashe((ast: StyleAst, filter?: SelectionFilter): StyleChunk[] =>
   Object.keys(ast || {})
     .map(file => {
-      const css = extractUnmatchable(ast[file]);
+      const css = extractUnmatchable(ast[file], filter);
       if (css) {
         return {
           file,
@@ -113,11 +113,11 @@ export const extractUnmatchableFromAst = kashe((ast: StyleAst): StyleChunk[] =>
     .map(x => x as StyleChunk)
 );
 
-export const extractAllUnmatchable = (def: StyleDefinition): StyleChunk[] => extractUnmatchableFromAst(def.ast);
+export const extractAllUnmatchable = (def: StyleDefinition, filter?: SelectionFilter): StyleChunk[] => extractUnmatchableFromAst(def.ast, filter);
 
 export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
   wrapInStyle(
-    extractAllUnmatchable(def).reduce((acc, { css }) => acc + css, ''),
+    extractAllUnmatchable(def).reduce((acc, {css}) => acc + css, ''),
     ['_unmatched']
   )
 );
@@ -126,7 +126,7 @@ export const extractAllUnmatchableAsString = kashe((def: StyleDefinition) =>
  * just wraps with <style
  */
 const criticalRulesToStyle = (styles: StyleChunk[], urlPrefix = ''): string =>
-  wrapInStyle(styles.map(({ css }) => css).join(''), unique(styles.map(({ file }) => `${urlPrefix}${file}`)));
+  wrapInStyle(styles.map(({css}) => css).join(''), unique(styles.map(({file}) => `${urlPrefix}${file}`)));
 
 export const criticalStylesToString = (html: string, def: StyleDefinition, filter?: SelectionFilter): string => {
   assertIsReady(def);
@@ -135,7 +135,7 @@ export const criticalStylesToString = (html: string, def: StyleDefinition, filte
 
 const getRawCriticalRules = (html: string, def: StyleDefinition, filter?: SelectionFilter) => {
   assertIsReady(def);
-  return [...extractAllUnmatchable(def), ...astToStyles(getStylesInText(html), def, filter)];
+  return astToStyles(getStylesInText(html), def, filter);
 };
 
 /**
@@ -148,8 +148,11 @@ export const getCriticalRules = (
   filter: SelectionFilter = createUsedFilter()
 ): string => {
   assertIsReady(def);
-  return getRawCriticalRules(html, def, filter)
-    .map(({ css, file }) => `/* ${file} */\n${css}`)
+  return [
+    ...extractAllUnmatchable(def, filter),
+    ...getRawCriticalRules(html, def, filter),
+  ]
+    .map(({css, file}) => `\n/* ${file} */\n${css}`)
     .join('');
 };
 
@@ -165,5 +168,8 @@ export const getCriticalStyles = (
   def: StyleDefinition,
   filter: SelectionFilter = createUsedFilter()
 ): string => {
-  return criticalRulesToStyle(getRawCriticalRules(html, def, filter), def.urlPrefix);
+  return criticalRulesToStyle([
+    ...extractAllUnmatchable(def, filter),
+    ...getRawCriticalRules(html, def, filter),
+  ], def.urlPrefix);
 };

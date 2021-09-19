@@ -52,10 +52,10 @@ export const fromAst = (rules: string[], def: SingleStyleAst, filter?: Selection
   return convertToString(blocks, def);
 };
 
-export const getUnmatchableRules = (def: SingleStyleAst, filter?: (selector: string) => boolean): StyleSelector[] =>
-  findUnmatchableSelectors(def.selectors).filter(block => !filter || filter(block.selector));
+export const getUnmatchableRules = (def: SingleStyleAst, filter?: SelectionFilter): StyleSelector[] =>
+  findUnmatchableSelectors(def.selectors).filter(block => !filter || filter(block.selector, block));
 
-export const extractUnmatchable = (def: SingleStyleAst, filter?: (selector: string) => boolean) =>
+export const extractUnmatchable = (def: SingleStyleAst, filter?:SelectionFilter) =>
   convertToString(getUnmatchableRules(def, filter), def) + getAtRules(def);
 
 const getAtRules = (def: SingleStyleAst) => def.atRules.reduce((acc, rule) => acc + rule.css, '');

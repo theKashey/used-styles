@@ -53,6 +53,7 @@ describe('File based css stream', () => {
   it('memoization: test', async () => {
     await styles;
     const s1 = getCriticalStyles('<div class="class2 someclass">', styles);
+    // @ts-expect-error
     delete styles.ast.file2;
     const s2 = getCriticalStyles('<div class="class2 someclass">', styles);
     const s3 = getCriticalStyles('<div class="class2 somethingNotUsed">', styles);

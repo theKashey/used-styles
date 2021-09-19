@@ -6,10 +6,12 @@ import { discoverProjectStyles, loadStyleDefinitions, parseProjectStyles } from 
 
 import { enableReactOptimization } from './config';
 import { createLink } from './createLink';
+import { createUsedFilter as createUsedSelectorsFilter } from './utils/cache';
 
 export { UsedTypes, StyleDefinition } from './types';
 
 export {
+  createUsedSelectorsFilter,
   loadStyleDefinitions,
   discoverProjectStyles,
   parseProjectStyles,

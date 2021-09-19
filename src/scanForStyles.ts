@@ -37,7 +37,7 @@ const astFromFiles = (fileDate: StyleFiles): StyleAst =>
  * (synchronously) creates style definition from a given set of style data
  * @param data a data in form of {fileName: fileContent}
  */
-export function parseProjectStyles(data: StyleFiles): SyncStyleDefinition {
+export function parseProjectStyles(data: Readonly<StyleFiles>): SyncStyleDefinition {
   const ast = astFromFiles(data);
 
   return {

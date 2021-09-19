@@ -1,11 +1,11 @@
 // @ts-ignore
 import * as crc32 from 'crc-32';
 import * as postcss from 'postcss';
-import { AtRule, Rule } from 'postcss';
+import {AtRule, Rule} from 'postcss';
 
-import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
-import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
-import { mapSelector } from './utils';
+import {AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector} from './ast';
+import {createRange, localRangeMax, localRangeMin, rangesIntervalEqual} from './ranges';
+import {mapSelector} from './utils';
 
 const getAtRule = (rule: AtRule | Rule): string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
@@ -47,8 +47,12 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
   return decl;
 };
 
+const hashString = (str: string) => {
+  return crc32.str(str).toString(32);
+};
+
 const hashBody = (body: StyleBody) => {
-  return crc32.str(JSON.stringify(body.rules)).toString(32);
+  return hashString(JSON.stringify(body.rules));
 };
 
 export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
@@ -61,6 +65,9 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
   const atParents = new Set<any>();
 
   root.walkAtRules(rule => {
+    if (rule.name === 'charset') {
+      return;
+    }
     if (rule.name !== 'media') {
       atParents.add(rule);
       atRules /*[rule.params]*/
@@ -95,7 +102,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
           start: createRange(Infinity, Infinity),
           end: createRange(0, 0),
         };
-        rule.walkDecls(({ prop, value, source, important }) => {
+        rule.walkDecls(({prop, value, source, important}) => {
           if (source) {
             delc.start = localRangeMin(delc.start, source.start!);
             delc.end = localRangeMax(delc.end, source.end!);
@@ -108,7 +115,7 @@ export const buildAst = (CSS: string, file: string = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
-        stand.hash = `${selector}${hashBody(delc)}`;
+        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.media.join())}`;
 
         selectors.push(stand);
       });
