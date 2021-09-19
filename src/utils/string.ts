@@ -1,10 +1,12 @@
+import memoizeOne from 'memoize-one';
+
 import { isReact } from '../config';
-import { memoizeOne } from './memoize-one';
 
 const memoizedArray = memoizeOne((...args: string[]): string[] => args);
 
 export const getStylesInText = (html: string): string[] =>
   memoizedArray(...(isReact() ? getStylesInReactText(html) : getStylesInPlainText(html)));
+
 export const getStylesInPlainText = (html: string): string[] =>
   [...(html.match(/class=["']([^"]+)["']/g) || []), ...(html.match(/class=([^"'\s>]+)/g) || [])].map((className) =>
     className.replace(/(class|'|"|=)+/g, '')

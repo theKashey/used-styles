@@ -1,9 +1,9 @@
 import { readFile } from 'fs';
 import { extname, join, relative } from 'path';
 
-// @ts-ignore
 import { promisify } from 'util';
 
+// @ts-ignore
 import scanDirectory from 'scan-directory';
 
 import { StyleAst } from './parser/ast';
