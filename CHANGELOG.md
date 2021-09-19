@@ -1,3 +1,15 @@
+## [2.2.1](https://github.com/theKashey/used-styles/compare/v2.2.0...v2.2.1) (2021-09-19)
+
+### Bug Fixes
+
+- selectors from different media targets can collide, fixes [#31](https://github.com/theKashey/used-styles/issues/31) ([64c5f26](https://github.com/theKashey/used-styles/commit/64c5f2681b5d882db46e24fd4f0a372f3b9d902b))
+
+# [2.2.0](https://github.com/theKashey/used-styles/compare/v2.1.4...v2.2.0) (2021-07-18)
+
+### Features
+
+- provide controlled discovery API ([65cfc4d](https://github.com/theKashey/used-styles/commit/65cfc4d411669149b4822ebd97c988c65faa8fc6))
+
 ## [2.1.4](https://github.com/theKashey/used-styles/compare/v2.1.3...v2.1.4) (2021-03-24)
 
 ## [2.1.3](https://github.com/theKashey/used-styles/compare/v2.1.2...v2.1.3) (2020-06-08)
