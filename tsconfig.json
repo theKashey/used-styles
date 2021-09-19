@@ -30,5 +30,7 @@
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types"],
     "jsx": "react"
-  }
+  },
+  "include": ["src", "__tests__"],
+  "exclude": ["node_modules"]
 }

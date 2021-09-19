@@ -15,8 +15,7 @@
     "size": "npx size-limit",
     "size:report": "npx size-limit --json > .size.json",
     "update": "lib-builder update",
-    "docz:dev": "docz dev",
-    "docz:build": "docz build",
+    "typecheck": "tsc --noEmit",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "changelog:rewrite": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
@@ -25,7 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "@size-limit/preset-small-lib": "^2.1.6",
-    "@theuiteam/lib-builder": "^0.0.9"
+    "@theuiteam/lib-builder": "0.1.4"
   },
   "engines": {
     "node": ">=10"
@@ -47,10 +46,10 @@
   ],
   "dependencies": {
     "crc-32": "^1.2.0",
-    "kashe": "^0.2.0",
+    "kashe": "^1.0.4",
     "postcss": "^7.0.17",
     "scan-directory": "^1.0.0",
-    "tslib": "^1.10.0"
+    "tslib": "^2.3.1"
   },
   "peerDependencies": {
     "@types/react": "^16.9.0",
