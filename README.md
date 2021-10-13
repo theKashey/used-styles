@@ -62,7 +62,7 @@ expensive operation) would be around **4ms**.
 
 ## Discovery API
 
-Use to scan your `dist`/`build` folder to create a look up table between classNames and files they are described in.
+Use it to scan your `dist`/`build` folder to create a look up table between classNames and files they are described in.
 
 1. `discoverProjectStyles(buildDirrectory, [filter]): StyleDef` - generates class lookup table
    > you may use the second argument to control which files should be scanned
@@ -75,7 +75,7 @@ order, which is important for many existing styles.
 
 ```js
 // with chunk format [chunkhash]_[id] lower ids are potentialy should be defined before higher
-const styleData = discoverProjectStyles(resolve('build'), name => {
+const styleData = discoverProjectStyles(resolve('build'), (name) => {
   // get ID of a chunk and use it as order hint
   const match = name.match(/(\d)_c.css/);
   return match && +match[1];
@@ -91,7 +91,7 @@ const styleData = discoverProjectStyles(resolve('build'), name => {
 ```ts
 return loadStyleDefinitions(
   /*list of files*/ async () => cssFiles,
-  /*data loader*/ file => fetchTxt(`http://localhost:${process.env.DEV_SERVER_PORT}/${file}`)
+  /*data loader*/ (file) => fetchTxt(`http://localhost:${process.env.DEV_SERVER_PORT}/${file}`)
   /*filter and order */ // (file) => order.indexOf(cssToChunk[file])
 );
 ```
@@ -282,7 +282,7 @@ import MultiStream from 'multistream';
 const lookup = await discoverProjectStyles('./build'); // __dirname usually
 
 // small utility for "readable" streams
-const readableString = string => {
+const readableString = (string) => {
   const s = new Readable();
   s.push(string);
   s.push(null);
@@ -294,7 +294,7 @@ const readableString = string => {
 const htmlStream = ReactDOM.renderToNodeStream(<App />);
 
 // create a style steam
-const styledStream = createStyleStream(lookup, style => {
+const styledStream = createStyleStream(lookup, (style) => {
   // emit a line to header Stream
   headerStream.push(createLink(`dist/${style}`));
   // or

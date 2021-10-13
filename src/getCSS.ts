@@ -151,8 +151,9 @@ const getRawCriticalRules = (html: string, def: StyleDefinition, filter?: Select
 };
 
 /**
- * returns critical rules(selector) used in a given HTML code
- * @see {@link getRawCriticalRules} for lower level API
+ * returns critical rules(selector) used in a given HTML code, including unmatchable rules, which can be used indirectly
+ * for example `:root`.
+ * @see {@link extractCriticalRules} for chunk-based operations
  */
 export const getCriticalRules = (
   html: string,
@@ -162,6 +163,22 @@ export const getCriticalRules = (
   assertIsReady(def);
 
   return [...extractAllUnmatchable(def, filter), ...getRawCriticalRules(html, def, filter)]
+    .map(({ css, file }) => `\n/* ${file} */\n${css}`)
+    .join('');
+};
+
+/**
+ * returns critical rules explicitly used in a given HTML code
+ * @see {@link getCriticalRules} for more complete solution, including unmatchable rules as well
+ */
+export const extractCriticalRules = (
+  html: string,
+  def: StyleDefinition,
+  filter: SelectionFilter = createUsedFilter()
+): string => {
+  assertIsReady(def);
+
+  return getRawCriticalRules(html, def, filter)
     .map(({ css, file }) => `\n/* ${file} */\n${css}`)
     .join('');
 };
