@@ -63,6 +63,7 @@ describe('extraction stories', () => {
       "
       /* test.css */
       .test { display: inline-block; }
+      .test:not(.some) { padding: 10px; }
       .test:focus,
       .test::hover { padding: 10px; }
       "

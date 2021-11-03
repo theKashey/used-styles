@@ -32,10 +32,10 @@ const getBreak = (rule: string) => {
 
   return min ? min : rule.length;
 };
-//
-// const getBeforePostfix = (rule: string) => {
-//   return rule.substr(0,getBreak(rule)).trim();
-// };
+
+const getBeforePostfix = (rule: string) => {
+  return rule.substr(0, getBreak(rule)).trim();
+};
 
 const getPostfix = (rule: string) => {
   return rule.substr(getBreak(rule)).trim();
@@ -103,7 +103,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
         const stand: StyleSelector = {
           media: getAtRule(rule),
           selector,
-          pieces: mapSelector(selector),
+          pieces: mapSelector(getBeforePostfix(selector)),
           postfix: getPostfix(selector),
           declaration: 0,
           hash: selector,
