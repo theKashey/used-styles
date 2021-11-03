@@ -32,6 +32,10 @@ const getBreak = (rule: string) => {
 
   return min ? min : rule.length;
 };
+//
+// const getBeforePostfix = (rule: string) => {
+//   return rule.substr(0,getBreak(rule)).trim();
+// };
 
 const getPostfix = (rule: string) => {
   return rule.substr(getBreak(rule)).trim();
@@ -126,7 +130,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
-        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.media.join())}`;
+        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.postfix)}${hashString(stand.media.join())}`;
 
         selectors.push(stand);
       });

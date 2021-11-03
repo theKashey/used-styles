@@ -195,6 +195,8 @@ export const getCriticalStyles = (
   def: StyleDefinition,
   filter: SelectionFilter = createUsedFilter()
 ): string => {
+  assertIsReady(def);
+
   return criticalRulesToStyle(
     [...extractAllUnmatchable(def, filter), ...getRawCriticalRules(html, def, filter)],
     def.urlPrefix
