@@ -100,7 +100,6 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
           media: getAtRule(rule),
           selector,
           pieces: mapSelector(selector),
-          // pieces: mapSelector(getBeforePostfix(selector)),
           postfix: getPostfix(selector),
           declaration: 0,
           hash: selector,
