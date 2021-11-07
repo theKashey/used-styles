@@ -1,3 +1,11 @@
+## [2.3.1](https://github.com/theKashey/used-styles/compare/v2.3.0...v2.3.1) (2021-11-07)
+
+# [2.3.0](https://github.com/theKashey/used-styles/compare/v2.2.1...v2.3.0) (2021-10-13)
+
+### Features
+
+- expose extractCriticalRules to handle per-chunk operations ([f038807](https://github.com/theKashey/used-styles/commit/f038807f6668c56adb27107dea01ff06024d7a8d))
+
 ## [2.2.1](https://github.com/theKashey/used-styles/compare/v2.2.0...v2.2.1) (2021-09-19)
 
 ### Bug Fixes
