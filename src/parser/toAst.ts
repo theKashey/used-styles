@@ -126,7 +126,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
-        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.media.join())}`;
+        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.postfix)}${hashString(stand.media.join())}`;
 
         selectors.push(stand);
       });

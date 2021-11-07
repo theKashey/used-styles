@@ -10,18 +10,20 @@ export const mapStyles = (styles: string) =>
       .match(/\.([^>~,+$:{\[\s]+)?/g) || []
   )
     // clean style name
-    .map(x => x.replace(/[\s,.>~+$]+/, ''))
-    .map(x => x.replace(/[.\s.:]+/, ''));
+    .map((x) => x.replace(/[\s,.>~+$]+/, ''))
+    .map((x) => x.replace(/[.\s.:]+/, ''));
 
 export const mapSelector = (selector: string) => {
+  // replace `something:not(.something)` to `something:not`
+  const cleanSelector = selector.replace(/\(([^)])*\)/, '');
   const ruleSelection =
     // anything like "style"
-    selector.match(/\.([^>~+$:{\[\s]+)?/g) || [];
+    cleanSelector.match(/\.([^>~+$:{\[\s]+)?/g) || [];
 
   ruleSelection.reverse();
 
   const effectiveMatcher: string = ruleSelection.find(classish) || '';
   const selectors = effectiveMatcher.match(/(\.[^.>~+,$:{\[\s]+)?/g);
 
-  return (selectors || []).map(x => x.replace(/[.\s.:]+/, '')).filter(Boolean);
+  return (selectors || []).map((x) => x.replace(/[.\s.:]+/, '')).filter(Boolean);
 };
