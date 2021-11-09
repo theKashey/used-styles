@@ -69,4 +69,30 @@ describe('extraction stories', () => {
       "
     `);
   });
+
+  it('handle exotic styles', async () => {
+    const styles: StyleDefinition = loadStyleDefinitions(
+      () => ['test.css'],
+      () => `
+@media screen and (min-width:1350px){.content__L0XJ\\+{color:red}}
+.primary__L4\\+dg{ color: blue}
+.primary__L4+dg{ color: wrong}
+        `
+    );
+    await styles;
+
+    const extracted = getCriticalRules('<div class="content__L0XJ+ primary__L4+dg">', styles);
+
+    expect(extracted).toMatchInlineSnapshot(`
+      "
+      /* test.css */
+
+      @media screen and (min-width:1350px) {
+      .content__L0XJ\\\\+ { color: red; }
+      }
+
+      .primary__L4\\\\+dg { color: blue; }
+      "
+    `);
+  });
 });
