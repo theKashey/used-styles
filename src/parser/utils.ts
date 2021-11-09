@@ -1,6 +1,6 @@
 const classish = (str: string): boolean => !!str && str.indexOf('.') >= 0;
 
-export const mapStyles = (styles: string) =>
+export const mapStyles = (styles: string): string[] =>
   (
     styles
       // remove style body
@@ -13,9 +13,9 @@ export const mapStyles = (styles: string) =>
     .map((x) => x.replace(/[\s,.>~+$]+/, ''))
     .map((x) => x.replace(/[.\s.:]+/, ''));
 
-export const mapSelector = (selector: string) => {
+export const mapSelector = (selector: string): string[] => {
   // replace `something:not(.something)` to `something:not`
-  const cleanSelector = selector.replace(/\(([^)])*\)/, '');
+  const cleanSelector = selector.replace(/\(([^)])*\)/g, '').replace(/(\\\+)/g, 'PLUS_SYMBOL');
   const ruleSelection =
     // anything like "style"
     cleanSelector.match(/\.([^>~+$:{\[\s]+)?/g) || [];
@@ -25,5 +25,5 @@ export const mapSelector = (selector: string) => {
   const effectiveMatcher: string = ruleSelection.find(classish) || '';
   const selectors = effectiveMatcher.match(/(\.[^.>~+,$:{\[\s]+)?/g);
 
-  return (selectors || []).map((x) => x.replace(/[.\s.:]+/, '')).filter(Boolean);
+  return (selectors || []).map((x) => x.replace(/[.\s.:]+/, '').replace(/PLUS_SYMBOL/g, '+')).filter(Boolean);
 };
