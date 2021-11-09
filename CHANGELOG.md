@@ -1,3 +1,9 @@
+## [2.3.2](https://github.com/theKashey/used-styles/compare/v2.3.1...v2.3.2) (2021-11-09)
+
+### Bug Fixes
+
+- classname can contain escaped sequence of not allowed characters ([894fed6](https://github.com/theKashey/used-styles/commit/894fed618d72bf3ce5bdd072bbdc7f221ee376f3))
+
 ## [2.3.1](https://github.com/theKashey/used-styles/compare/v2.3.0...v2.3.1) (2021-11-07)
 
 # [2.3.0](https://github.com/theKashey/used-styles/compare/v2.2.1...v2.3.0) (2021-10-13)
