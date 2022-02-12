@@ -20,7 +20,10 @@ export const rangesIntervalEqual = (a: CodeLocationRange, b: CodeLocationRange) 
 
 export const localRangeMin = (v: CodeLocation, max: LocalCodeLocation): CodeLocation => {
   if (v.line < max.line) {
-    return v;
+    return {
+      line: v.line,
+      column: v.column,
+    };
   }
 
   if (v.line === max.line) {
@@ -32,8 +35,8 @@ export const localRangeMin = (v: CodeLocation, max: LocalCodeLocation): CodeLoca
   }
 
   return {
-    // file: v.file,
-    ...max,
+    line: max.line,
+    column: max.column,
   };
 };
 
@@ -51,8 +54,8 @@ export const localRangeMax = (v: CodeLocation, min: LocalCodeLocation): CodeLoca
   }
 
   return {
-    // file: v.file,
-    ...min,
+    line: min.line,
+    column: min.column,
   };
 };
 

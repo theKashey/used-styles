@@ -8,8 +8,10 @@ import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from '
 import { mapSelector } from './utils';
 
 const getAtRule = (rule: AtRule | Rule): string[] => {
-  if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
-    return getAtRule(rule.parent as any).concat(rule.parent.params);
+  const parent = rule.parent as AtRule;
+
+  if (parent && parent.name === 'media') {
+    return getAtRule(parent as any).concat(parent.params);
   }
 
   return [];
@@ -52,7 +54,11 @@ const assignBody = (decl: StyleBody, bodies: StyleBodies): StyleBody => {
   return decl;
 };
 
-const hashString = (str: string) => {
+const hashString = (str: string | undefined): string => {
+  if (str === undefined) {
+    return '';
+  }
+
   return crc32.str(str).toString(32);
 };
 
