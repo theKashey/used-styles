@@ -150,7 +150,6 @@ describe('extraction stories', () => {
       "
       /* test.css */
       .child { padding: 10px; }
-      .parent .child { padding: 10px; }
       "
     `);
   });

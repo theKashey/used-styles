@@ -5,7 +5,7 @@ import { AtRule, Rule } from 'postcss';
 
 import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
 import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
-import { mapSelector } from './utils';
+import { extractParents, mapSelector } from './utils';
 
 const getAtRule = (rule: AtRule | Rule): string[] => {
   if (rule && rule.parent && 'name' in rule.parent && rule.parent.name === 'media') {
@@ -104,6 +104,11 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
           declaration: 0,
           hash: selector,
         };
+        const parents = extractParents(selector);
+
+        if (parents.length > 0) {
+          stand.parents = parents;
+        }
 
         const delc: StyleBody = {
           id: NaN,

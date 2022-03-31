@@ -12,6 +12,7 @@ export interface StyleSelector {
 
   pieces: string[];
   media: string[];
+  parents?: string[];
 
   declaration: number;
   hash: string;
