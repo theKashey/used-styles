@@ -1,14 +1,15 @@
 import { StyleSelector } from '../parser/ast';
-import { CacheLine } from '../types';
+import { CacheLine, SelectionFilter } from '../types';
 
 export const createLine = (): CacheLine => ({
   tail: '',
 });
 
-export const createUsedFilter = () => {
+export const createUsedFilter = (): SelectionFilter => {
   const usedSelectors = new Set<string>();
+  const knownClasses = new Set<string>();
 
-  return (_: any, rule: StyleSelector) => {
+  const filter: SelectionFilter = (_: any, rule: StyleSelector) => {
     // if rule is already seen - skip
     if (usedSelectors.has(rule.hash)) {
       return false;
@@ -18,7 +19,7 @@ export const createUsedFilter = () => {
     const parents = rule.parents;
 
     if (parents) {
-      if (!parents.every((parent) => usedSelectors.has(parent))) {
+      if (!parents.every((parent) => knownClasses.has(parent))) {
         return false;
       }
     }
@@ -27,4 +28,8 @@ export const createUsedFilter = () => {
 
     return true;
   };
+
+  filter.introduceClasses = (classes) => classes.forEach((cl) => knownClasses.add(cl));
+
+  return filter;
 };

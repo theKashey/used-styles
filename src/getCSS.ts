@@ -6,7 +6,7 @@ import { FlagType, SelectionFilter, StyleChunk, StyleDefinition, UsedTypes, Used
 import { assertIsReady } from './utils/async';
 import { createUsedFilter } from './utils/cache';
 import { unique } from './utils/order';
-import { getStylesInText } from './utils/string';
+import { flattenClasses, getStylesInText } from './utils/string';
 
 export const getUnusableStyles = kashe(
   (def: StyleDefinition): UsedTypesRef =>
@@ -90,6 +90,10 @@ export const getUsedStyles = (htmlCode: string, def: StyleDefinition): UsedTypes
 const astToStyles = kashe((styles: string[], def: StyleDefinition, filter?: SelectionFilter): StyleChunk[] => {
   const { ast } = def;
   const { fetches, usage } = astToUsedStyles(styles, def);
+
+  if (filter && filter.introduceClasses) {
+    filter.introduceClasses(flattenClasses(styles));
+  }
 
   return usage.map((file) => ({
     file,

@@ -31,11 +31,19 @@ export type StyleDefinition = Readonly<{
   ast: Readonly<StyleAst>;
   urlPrefix: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
-}>
+}>;
 
 /**
  * A function used to control which selectors should be used
  * @param selector - DEPRECATED
  * @param {StyleSelector} rule - a reference to a rule
  */
-export type SelectionFilter = (selector: string, rule: StyleSelector) => boolean;
+export type SelectionFilter = {
+  (selector: string, rule: StyleSelector): boolean;
+  /**
+   * Class discovery helper
+   * @see {@link https://github.com/theKashey/used-styles/issues/30}
+   * @internal
+   */
+  introduceClasses?(classes: string[]): void;
+};

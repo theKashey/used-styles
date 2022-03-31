@@ -140,16 +140,26 @@ describe('extraction stories', () => {
 .parent .child {
   padding: 10px;
 }
+
+.grand .child {
+  padding: 10px;
+}
+
+.top .child {
+  margin: 10px;
+}
 `
     );
     await styles;
 
-    const extracted = getCriticalRules('<div class="child">', styles);
+    const extracted = getCriticalRules('<div class="grand top"><div class="child"></div>', styles);
 
     expect(extracted).toMatchInlineSnapshot(`
       "
       /* test.css */
       .child { padding: 10px; }
+      .grand .child { padding: 10px; }
+      .top .child { margin: 10px; }
       "
     `);
   });
