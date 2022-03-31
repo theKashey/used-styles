@@ -13,11 +13,29 @@ export const mapStyles = (styles: string): string[] =>
     .map((x) => x.replace(/[\s,.>~+$]+/, ''))
     .map((x) => x.replace(/[.\s.:]+/, ''));
 
+export const extractParents = (selector: string): string[] => {
+  // replace `something:not(.something)` to `something:not`
+  const cleanSelector = selector.replace(/\(([^)])*\)/g, '').replace(/(\\\+)/g, 'PLUS_SYMBOL');
+  const parts = cleanSelector.split(' ');
+  // remove the last part
+  parts.pop();
+
+  const ruleSelection =
+    // anything like "class"
+    parts.join(' ').match(/\.([^>~+$:{\[\s]+)?/g) || [];
+
+  const effectiveMatcher = ruleSelection.filter(classish);
+
+  const selectors = effectiveMatcher.map((x) => x.replace(/[.\s.:]+/, '').replace(/PLUS_SYMBOL/g, '+')).filter(Boolean);
+
+  return selectors;
+};
+
 export const mapSelector = (selector: string): string[] => {
   // replace `something:not(.something)` to `something:not`
   const cleanSelector = selector.replace(/\(([^)])*\)/g, '').replace(/(\\\+)/g, 'PLUS_SYMBOL');
   const ruleSelection =
-    // anything like "style"
+    // anything like "class"
     cleanSelector.match(/\.([^>~+$:{\[\s]+)?/g) || [];
 
   ruleSelection.reverse();

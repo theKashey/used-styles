@@ -1,4 +1,4 @@
-import { getCriticalRules, loadStyleDefinitions, StyleDefinition } from '../src';
+import { alterProjectStyles, getCriticalRules, loadStyleDefinitions, StyleDefinition } from '../src';
 
 describe('extraction stories', () => {
   it('handles duplicated selectors', async () => {
@@ -92,6 +92,64 @@ describe('extraction stories', () => {
       }
 
       .primary__L4\\\\+dg { color: blue; }
+      "
+    `);
+  });
+
+  it('reducing styles', async () => {
+    const styles: StyleDefinition = loadStyleDefinitions(
+      () => ['test.css'],
+      () => `
+.button {
+  display: inline-block;
+}
+
+.button:focus {
+  padding: 10px;
+}
+`
+    );
+    await styles;
+
+    const extracted = getCriticalRules(
+      '<div class="button">',
+      alterProjectStyles(styles, {
+        pruneSelector: (selector) => selector.includes(':focus'),
+      })
+    );
+
+    expect(extracted).toMatchInlineSnapshot(`
+      "
+      /* test.css */
+      .button { display: inline-block; }
+      "
+    `);
+  });
+
+  it('opening styles styles', async () => {
+    const styles: StyleDefinition = loadStyleDefinitions(
+      () => ['test.css'],
+      () => `
+.parent {
+  display: inline-block;
+}
+
+.child {
+  padding: 10px;
+}
+.parent .child {
+  padding: 10px;
+}
+`
+    );
+    await styles;
+
+    const extracted = getCriticalRules('<div class="child">', styles);
+
+    expect(extracted).toMatchInlineSnapshot(`
+      "
+      /* test.css */
+      .child { padding: 10px; }
       "
     `);
   });

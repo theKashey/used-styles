@@ -1,10 +1,20 @@
+import { pruneSelector } from './operations/prune-selector';
 import { StyleAst } from './parser/ast';
 import { StyleDefinition } from './types';
 import { assertIsReady } from './utils/async';
 
 export interface AlterOptions {
-  // filters available styles
-  filter(fileName: string): boolean;
+  /**
+   * filters available styles sources/files
+   * @param fileName
+   */
+  filter?(fileName: string): boolean;
+
+  /**
+   * filters available rule
+   * @param styleName
+   */
+  pruneSelector?(selector: string): boolean;
 }
 
 /**
@@ -23,14 +33,14 @@ export const alterProjectStyles = (def: StyleDefinition, options: AlterOptions):
     ...def,
     ast: Object.keys(def.ast).reduce((acc, file) => {
       const astFile = def.ast[file];
-      const shouldRemove = !options.filter || !options.filter(file);
+      const shouldRemove = options.filter && !options.filter(file);
 
       // dont add this file to the result file list
       if (shouldRemove) {
         return acc;
       }
 
-      acc[file] = astFile;
+      acc[file] = options.pruneSelector ? pruneSelector(astFile, options.pruneSelector) : astFile;
 
       return acc;
     }, {} as StyleAst),
