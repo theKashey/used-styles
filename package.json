@@ -9,7 +9,7 @@
   "scripts": {
     "build": "lib-builder build && yarn size:report",
     "test": "jest",
-    "prepublish": "yarn build && yarn changelog",
+    "prepublish-only": "yarn changelog && yarn build",
     "lint": "lib-builder lint",
     "dev": "lib-builder dev",
     "test:ci": "jest --runInBand --coverage",
