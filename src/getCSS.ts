@@ -34,9 +34,9 @@ export const astToUsedStyles = kashe((styles: string[], def: StyleDefinition) =>
     const classes = className.split(' ');
 
     classes.forEach((singleClass) => {
-      const files = lookup[singleClass];
+      if (lookup.hasOwnProperty(singleClass)) {
+        const files = lookup[singleClass];
 
-      if (files) {
         files.forEach((file) => {
           if (!fetches[file]) {
             fetches[file] = {};
