@@ -33,7 +33,7 @@ describe('test parent selector', () => {
   });
 
   it('should return the double style', () => {
-    expect(extractParents('.a.b c')).toEqual(['a.b']);
+    expect(extractParents('.a.b c')).toEqual(['a', 'b']);
   });
 
   it('should keep the first style; drop last', () => {

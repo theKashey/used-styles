@@ -26,7 +26,10 @@ export const extractParents = (selector: string): string[] => {
 
   const effectiveMatcher = ruleSelection.filter(classish);
 
-  const selectors = effectiveMatcher.map((x) => x.replace(/[.\s.:]+/, '').replace(/PLUS_SYMBOL/g, '+')).filter(Boolean);
+  const selectors = effectiveMatcher
+    .map((x) => x.replace(/[.\s.:]+/, '').replace(/PLUS_SYMBOL/g, '+'))
+    .filter(Boolean)
+    .flatMap<string>((cl) => cl.split('.'));
 
   return selectors;
 };

@@ -30,7 +30,7 @@
     "@theuiteam/lib-builder": "0.1.4"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=11"
   },
   "files": [
     "dist"
