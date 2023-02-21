@@ -148,6 +148,18 @@ describe('extraction stories', () => {
 .top .child {
   margin: 10px;
 }
+
+.grand.top .child {
+  position: correct
+}
+
+.grand.top {
+  margin: 10px;
+}
+
+.grand.top.incorrect .child {
+  position: incorrect
+}
 `
     );
     await styles;
@@ -160,6 +172,8 @@ describe('extraction stories', () => {
       .child { padding: 10px; }
       .grand .child { padding: 10px; }
       .top .child { margin: 10px; }
+      .grand.top .child { position: correct; }
+      .grand.top { margin: 10px; }
       "
     `);
   });
