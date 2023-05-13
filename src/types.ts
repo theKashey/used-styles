@@ -12,10 +12,15 @@ export type StyleDef = Record<string, Record<string, boolean>>;
 export type UsedTypes = string[];
 export type UsedTypesRef = Record<string, boolean>;
 
+export interface AbstractStyleDefinition {
+  isReady: boolean;
+  lookup: StylesLookupTable;
+  ast: Readonly<StyleAst>;
+}
 export interface SyncStyleDefinition {
   isReady: true;
   lookup: StylesLookupTable;
-  ast: StyleAst;
+  ast: Readonly<StyleAst>;
 }
 
 export interface StyleChunk {

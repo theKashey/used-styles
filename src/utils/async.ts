@@ -1,6 +1,6 @@
 import { StyleDefinition } from '../types';
 
-export const assertIsReady = (def: StyleDefinition) => {
+export const assertIsReady = (def: Pick<StyleDefinition, 'isReady'>) => {
   if (!('isReady' in def)) {
     throw new Error(
       'used-styles: style definitions has to be created using discoverProjectStyles or loadStyleDefinitions'
