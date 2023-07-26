@@ -3,6 +3,7 @@ import * as crc32 from 'crc-32';
 import * as postcss from 'postcss';
 import { AtRule, Rule } from 'postcss';
 
+import { splitSelector } from '../utils/split-selectors';
 import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
 import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
 import { extractParents, mapSelector } from './utils';
@@ -97,7 +98,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
       return;
     }
 
-    const ruleSelectors = rule.selector.split(',');
+    const ruleSelectors = splitSelector(rule.selector);
 
     ruleSelectors
       .map((sel) => sel.trim())
