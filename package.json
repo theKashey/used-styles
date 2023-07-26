@@ -46,7 +46,7 @@
     "crc-32": "^1.2.0",
     "kashe": "^1.0.4",
     "memoize-one": "^5.2.1",
-    "postcss": "^7.0.17",
+    "postcss": "^8.0.0",
     "scan-directory": "^1.0.0",
     "tslib": "^2.3.1"
   },
