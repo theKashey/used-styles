@@ -38,3 +38,17 @@ export const findLastBrace = (str: string): number => {
 
   return fromIndex;
 };
+
+export const flattenClasses = (classes: string[]): string[] => {
+  const result = new Set<string>();
+
+  for (const cls of classes) {
+    if (cls.includes(' ')) {
+      cls.split(' ').forEach((cl) => result.add(cl));
+    } else {
+      result.add(cls);
+    }
+  }
+
+  return Array.from(result.values());
+};

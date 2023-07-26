@@ -1,3 +1,12 @@
+# [2.4.0](https://github.com/theKashey/used-styles/compare/v2.3.3...v2.4.0) (2022-03-31)
+
+### Features
+
+- do not extract nested selectors without prior parts introduced first, fixes [#30](https://github.com/theKashey/used-styles/issues/30) ([0b83f8e](https://github.com/theKashey/used-styles/commit/0b83f8e88f461e195cc3ce8f9976d324c0471466))
+- selectors pruning. fixes [#38](https://github.com/theKashey/used-styles/issues/38) ([4ce4d18](https://github.com/theKashey/used-styles/commit/4ce4d18cd10474126f7882b395e15522fc2702f9))
+
+## [2.3.3](https://github.com/theKashey/used-styles/compare/v2.3.2...v2.3.3) (2022-02-12)
+
 ## [2.3.2](https://github.com/theKashey/used-styles/compare/v2.3.1...v2.3.2) (2021-11-09)
 
 ### Bug Fixes

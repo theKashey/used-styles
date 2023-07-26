@@ -12,10 +12,15 @@ export type StyleDef = Record<string, Record<string, boolean>>;
 export type UsedTypes = string[];
 export type UsedTypesRef = Record<string, boolean>;
 
+export interface AbstractStyleDefinition {
+  isReady: boolean;
+  lookup: StylesLookupTable;
+  ast: Readonly<StyleAst>;
+}
 export interface SyncStyleDefinition {
   isReady: true;
   lookup: StylesLookupTable;
-  ast: StyleAst;
+  ast: Readonly<StyleAst>;
 }
 
 export interface StyleChunk {
@@ -31,11 +36,19 @@ export type StyleDefinition = Readonly<{
   ast: Readonly<StyleAst>;
   urlPrefix: string;
   then(resolve?: () => void, reject?: () => void): Promise<void>;
-}>
+}>;
 
 /**
  * A function used to control which selectors should be used
  * @param selector - DEPRECATED
  * @param {StyleSelector} rule - a reference to a rule
  */
-export type SelectionFilter = (selector: string, rule: StyleSelector) => boolean;
+export type SelectionFilter = {
+  (selector: string, rule: StyleSelector): boolean;
+  /**
+   * Class discovery helper
+   * @see {@link https://github.com/theKashey/used-styles/issues/30}
+   * @internal
+   */
+  introduceClasses?(classes: string[]): void;
+};
