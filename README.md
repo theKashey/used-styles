@@ -29,7 +29,7 @@ Works in two modes:
 
 Critical style extraction:
 
-- 🧱 will all all used styles at the beginning of your page in a **string** mode
+- 🧱 will _load_ all used styles at the beginning of your page in a **string** mode
 - 💉 will _interleave_ HTML and CSS in a **stream** mode. This is the best experience possible
 
 ## How it works
