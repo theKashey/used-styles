@@ -177,4 +177,132 @@ describe('extraction stories', () => {
       "
     `);
   });
+
+  describe('CSS Cascade Layers', () => {
+    it('handles CSS Cascade Layers', async () => {
+      const styles = loadStyleDefinitions(
+        () => ['test.css'],
+        () => `
+        @layer module, state;
+
+        .a {
+          color: red;
+        }
+
+        @layer state {
+          .a {
+            background-color: brown;
+          }
+          .b {
+            border: medium solid limegreen;
+          }
+        }
+
+        @layer module {
+          .a {
+            border: medium solid violet;
+            background-color: yellow;
+            color: white;
+          }
+        }
+        `
+      );
+
+      await styles;
+
+      const extracted = getCriticalRules('<div class="a">', styles);
+
+      expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* test.css */
+        @layer module, state@layer state {
+                  .a {
+                    background-color: brown;
+                  }
+                  .b {
+                    border: medium solid limegreen;
+                  }
+                }@layer module {
+                  .a {
+                    border: medium solid violet;
+                    background-color: yellow;
+                    color: white;
+                  }
+                }
+        /* test.css */
+        .a { color: red; }
+        "
+      `);
+    });
+
+    it('handles CSS Cascade Layers across multiple files', async () => {
+      const CSS = {
+        'index.css': `
+        @layer module, state;
+
+        .a {
+          color: red;
+        }
+
+        @layer state {
+          .a {
+            background-color: brown;
+          }
+          .b {
+            border: medium solid limegreen;
+          }
+        }
+
+        @layer module {
+          .a {
+            border: medium solid violet;
+            background-color: yellow;
+            color: white;
+          }
+        }
+        `,
+        'chunk.css': `
+          @layer state {
+            .b {
+              border: medium solid limegreen;
+            }
+          }
+        `,
+      } as const;
+
+      const styles = loadStyleDefinitions(
+        () => Object.keys(CSS),
+        (file) => CSS[file as keyof typeof CSS]
+      );
+
+      await styles;
+
+      const extracted = getCriticalRules('<div class="b">', styles);
+
+      expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* index.css */
+        @layer module, state@layer state {
+                  .a {
+                    background-color: brown;
+                  }
+                  .b {
+                    border: medium solid limegreen;
+                  }
+                }@layer module {
+                  .a {
+                    border: medium solid violet;
+                    background-color: yellow;
+                    color: white;
+                  }
+                }
+        /* chunk.css */
+        @layer state {
+                    .b {
+                      border: medium solid limegreen;
+                    }
+                  }"
+      `);
+    });
+  });
 });
