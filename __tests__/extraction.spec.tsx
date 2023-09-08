@@ -304,5 +304,82 @@ describe('extraction stories', () => {
                   }"
       `);
     });
+
+    it('handles nested CSS Cascade Layers', async () => {
+      const CSS = {
+        'index.css': `
+
+        .a {
+          color: red;
+        }
+
+        @layer state {
+          .a {
+            background-color: brown;
+          }
+          .b {
+            border: medium solid limegreen;
+          }
+
+          @layer module {
+            .a {
+              border: medium solid violet;
+              background-color: yellow;
+              color: white;
+            }
+          }
+        }
+
+        @layer state.module {
+          .a {
+            border-color: blue;
+          }
+        }
+        `,
+      };
+
+      const styles = loadStyleDefinitions(
+        () => Object.keys(CSS),
+        (file) => CSS[file as keyof typeof CSS]
+      );
+
+      await styles;
+
+      const extracted = getCriticalRules('<div class="a">', styles);
+
+      expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* index.css */
+        @layer state {
+                  .a {
+                    background-color: brown;
+                  }
+                  .b {
+                    border: medium solid limegreen;
+                  }
+
+                  @layer module {
+                    .a {
+                      border: medium solid violet;
+                      background-color: yellow;
+                      color: white;
+                    }
+                  }
+                }@layer module {
+                    .a {
+                      border: medium solid violet;
+                      background-color: yellow;
+                      color: white;
+                    }
+                  }@layer state.module {
+                  .a {
+                    border-color: blue;
+                  }
+                }
+        /* index.css */
+        .a { color: red; }
+        "
+      `);
+    });
   });
 });
