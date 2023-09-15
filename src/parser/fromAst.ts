@@ -63,7 +63,7 @@ export const extractUnmatchable = (def: SingleStyleAst, filter?: SelectionFilter
   convertToString(getUnmatchableRules(def, filter), def) + getAtRules(def);
 
 const getAtRules = (def: SingleStyleAst) =>
-  def.atRules.reduce((acc, rule) => {
+  def.unknownAtRules.reduce((acc, rule) => {
     if (rule.kind === 'layer') {
       /**
        * These are the cases of cascade layer styles order definition,
@@ -80,15 +80,15 @@ export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyle
 
   const result: string[] = [];
 
-  let lastMedia = ['', ''];
+  let lastProcessedAtRule = ['', ''];
 
   blocks.forEach((block, index) => {
-    const media = getProcessedAtRules(block);
+    const processedAtRule = getProcessedAtRules(block);
 
-    if (media[0] !== lastMedia[0]) {
-      result.push(lastMedia[1]);
-      lastMedia = media;
-      result.push(lastMedia[0]);
+    if (processedAtRule[0] !== lastProcessedAtRule[0]) {
+      result.push(lastProcessedAtRule[1]);
+      lastProcessedAtRule = processedAtRule;
+      result.push(lastProcessedAtRule[0]);
     }
 
     if (index < blocks.length - 1 && block.declaration === blocks[index + 1].declaration) {
@@ -98,7 +98,7 @@ export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyle
     }
   });
 
-  result.push(lastMedia[1]);
+  result.push(lastProcessedAtRule[1]);
 
   return result.join(separator);
 };

@@ -44,7 +44,7 @@ export interface SingleStyleAst {
   file: string;
   selectors: StyleSelector[];
   bodies: StyleBodies;
-  atRules: AtRules;
+  unknownAtRules: AtRules;
 }
 
 export type StyleAst = Record<string, SingleStyleAst>;

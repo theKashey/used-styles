@@ -16,11 +16,17 @@ const isCascadeLayerStyles = (rule: AtRule) => {
   return rule.name === 'layer' && rule.nodes;
 };
 
-const getAtRule = (rule: AtRule | Rule): ProcessedAtRule[] => {
+/**
+ * There are few cases of @-rules, which are getting special processing,
+ * like `@media` and `@layer` (cascade layer styles order definition).
+ *
+ * Any other kind of @-rule is not processed and is just passed to critical css as is.
+ */
+const getProcessedAtRule = (rule: AtRule | Rule): ProcessedAtRule[] => {
   const parent = rule.parent as AtRule;
 
   if (parent && (parent.name === 'media' || parent.name === 'layer')) {
-    return getAtRule(parent as any).concat({ value: parent.params, kind: parent.name });
+    return getProcessedAtRule(parent as any).concat({ value: parent.params, kind: parent.name });
   }
 
   return [];
@@ -78,7 +84,7 @@ const hashBody = (body: StyleBody) => {
 export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
-  const atRules: AtRules = [];
+  const unknownAtRules: AtRules = [];
 
   const bodies: StyleBodies = {};
 
@@ -92,7 +98,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
     if (rule.name !== 'media' && !isCascadeLayerStyles(rule)) {
       atParents.add(rule);
 
-      atRules /*[rule.params]*/
+      unknownAtRules /*[rule.params]*/
         .push({
           kind: rule.name,
           id: rule.params,
@@ -112,7 +118,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
       .map((sel) => sel.trim())
       .forEach((selector) => {
         const stand: StyleSelector = {
-          atrules: getAtRule(rule),
+          atrules: getProcessedAtRule(rule),
           selector,
           pieces: mapSelector(selector),
           postfix: getPostfix(selector),
@@ -159,6 +165,6 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
     file,
     selectors,
     bodies,
-    atRules,
+    unknownAtRules,
   };
 };
