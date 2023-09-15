@@ -350,5 +350,66 @@ describe('extraction stories', () => {
         }"
       `);
     });
+
+    test('CSS Cascade Layers definition should be always at top', async () => {
+      const CSS = {
+        'index.css': `
+        .a {
+          color: red;
+        }
+
+        @layer state {
+          .a {
+            background-color: brown;
+          }
+          .b {
+            color: red;
+          }
+        }
+
+        @layer module {
+          .a {
+            border: medium solid violet;
+            background-color: yellow;
+            color: white;
+          }
+        }
+        `,
+        'chunk.css': `
+          @layer module, state;
+
+          @layer state {
+            .b {
+              border: medium solid limegreen;
+            }
+          }
+        `,
+      } as const;
+
+      const styles = loadStyleDefinitions(
+        () => Object.keys(CSS),
+        (file) => CSS[file as keyof typeof CSS]
+      );
+
+      await styles;
+
+      const extracted = getCriticalRules('<div class="b">', styles);
+
+      expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* chunk.css */
+        @layer module, state
+        /* index.css */
+
+        @layer state {
+        .b { color: red; }
+        }
+        /* chunk.css */
+
+        @layer state {
+        .b { border: medium solid limegreen; }
+        }"
+      `);
+    });
   });
 });
