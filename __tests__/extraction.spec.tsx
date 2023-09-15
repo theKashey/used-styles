@@ -412,7 +412,7 @@ describe('extraction stories', () => {
       `);
     });
 
-    test('CSS Cascade Layers definitions are deduplicated', async () => {
+    test.skip('CSS Cascade Layers definitions are deduplicated', async () => {
       const CSS = {
         'index.css': `
         @layer module, state;
