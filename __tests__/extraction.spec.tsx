@@ -215,23 +215,18 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* test.css */
-        @layer module, state@layer state {
-                  .a {
-                    background-color: brown;
-                  }
-                  .b {
-                    border: medium solid limegreen;
-                  }
-                }@layer module {
-                  .a {
-                    border: medium solid violet;
-                    background-color: yellow;
-                    color: white;
-                  }
-                }
+        @layer module, state
         /* test.css */
         .a { color: red; }
-        "
+
+        @layer state {
+        .a { background-color: brown; }
+        }
+        @layer module {
+        .a { border: medium solid violet;
+        background-color: yellow;
+        color: white; }
+        }"
       `);
     });
 
@@ -282,26 +277,14 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* index.css */
-        @layer module, state@layer state {
-                  .a {
-                    background-color: brown;
-                  }
-                  .b {
-                    border: medium solid limegreen;
-                  }
-                }@layer module {
-                  .a {
-                    border: medium solid violet;
-                    background-color: yellow;
-                    color: white;
-                  }
-                }
-        /* chunk.css */
+        @layer module, state
+        /* index.css */
+
         @layer state {
-                    .b {
-                      border: medium solid limegreen;
-                    }
-                  }"
+        .b { border: medium solid limegreen; }
+        }
+        /* chunk.css */
+        "
       `);
     });
 
@@ -350,35 +333,21 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* index.css */
-        @layer state {
-                  .a {
-                    background-color: brown;
-                  }
-                  .b {
-                    border: medium solid limegreen;
-                  }
-
-                  @layer module {
-                    .a {
-                      border: medium solid violet;
-                      background-color: yellow;
-                      color: white;
-                    }
-                  }
-                }@layer module {
-                    .a {
-                      border: medium solid violet;
-                      background-color: yellow;
-                      color: white;
-                    }
-                  }@layer state.module {
-                  .a {
-                    border-color: blue;
-                  }
-                }
-        /* index.css */
         .a { color: red; }
-        "
+
+        @layer state {
+        .a { background-color: brown; }
+        }
+        @layer state {
+        @layer module {
+        .a { border: medium solid violet;
+        background-color: yellow;
+        color: white; }
+        }
+        }
+        @layer state.module {
+        .a { border-color: blue; }
+        }"
       `);
     });
   });

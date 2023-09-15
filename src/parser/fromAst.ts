@@ -2,7 +2,7 @@ import { kashe } from 'kashe';
 import * as postcss from 'postcss';
 
 import { SelectionFilter } from '../types';
-import { SingleStyleAst, StyleBody, StyleRule, StyleSelector } from './ast';
+import { ProcessedAtRule, SingleStyleAst, StyleBody, StyleRule, StyleSelector } from './ast';
 
 const separator = process.env.NODE_ENV === 'production' ? '' : '\n';
 
@@ -18,12 +18,12 @@ const createDecl = (decl: StyleRule) => postcss.decl(decl) + ';';
 
 const declsToString = (rules: StyleRule[]) => rules.map((decl) => createDecl(decl)).join(separator);
 
-const getMedia = ({ media }: { media: string[] }) => {
+const getProcessedAtRules = ({ atrules }: { atrules: ProcessedAtRule[] }) => {
   const prefix: string[] = [];
   const postfix: string[] = [];
 
-  media.forEach((currentMedia) => {
-    prefix.push(`@media ${currentMedia} {`);
+  atrules.forEach((currentRule) => {
+    prefix.push(`@${currentRule.kind} ${currentRule.value} {`);
     postfix.push('}');
   });
 
@@ -72,7 +72,7 @@ export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyle
   let lastMedia = ['', ''];
 
   blocks.forEach((block, index) => {
-    const media = getMedia(block);
+    const media = getProcessedAtRules(block);
 
     if (media[0] !== lastMedia[0]) {
       result.push(lastMedia[1]);

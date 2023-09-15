@@ -6,12 +6,17 @@ export interface StyleRule {
   important: boolean;
 }
 
+export interface ProcessedAtRule {
+  kind: 'media' | 'layer';
+  value: string;
+}
+
 export interface StyleSelector {
   selector: string;
   postfix: string;
 
   pieces: string[];
-  media: string[];
+  atrules: ProcessedAtRule[];
   parents?: string[];
 
   declaration: number;
