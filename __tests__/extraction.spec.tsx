@@ -411,5 +411,91 @@ describe('extraction stories', () => {
         }"
       `);
     });
+
+    it('should handle CSS Cascade Layers with @layer at-rule mixed with media rules', async () => {
+      const CSS = {
+        'index.css': `
+        .a {
+          color: red;
+        }
+
+        @layer state {
+          .a {
+            background-color: brown;
+          }
+
+          @media only print {
+            .b {
+              color: red;
+            }
+
+            .a {
+              color: red;
+            }
+          }
+        }
+
+        @layer module {
+          .a {
+            border: medium solid violet;
+            background-color: yellow;
+            color: white;
+          }
+        }
+        `,
+        'chunk.css': `
+          @layer module, state;
+
+          @media only print {
+            .a {
+              width: 42px;
+            }
+
+            @layer state {
+              .b {
+                border: medium solid limegreen;
+              }
+            }
+          }
+        `,
+        'other.css': `
+          .b {
+            background-color: brown;
+          }
+        `,
+      } as const;
+
+      const styles = loadStyleDefinitions(
+        () => Object.keys(CSS),
+        (file) => CSS[file as keyof typeof CSS]
+      );
+
+      await styles;
+
+      const extracted = getCriticalRules('<div class="b">', styles);
+
+      expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* chunk.css */
+        @layer module, state;
+        /* index.css */
+
+        @layer state {
+        @media only print {
+        .b { color: red; }
+        }
+        }
+        /* chunk.css */
+
+        @media only print {
+        @layer state {
+        .b { border: medium solid limegreen; }
+        }
+        }
+        /* other.css */
+        .b { background-color: brown; }
+        "
+      `);
+    });
   });
 });
