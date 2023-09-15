@@ -10,10 +10,8 @@ import { extractParents, mapSelector } from './utils';
 
 const isCascadeLayerStyles = (rule: AtRule) => {
   /**
-   * This detects cases like `@layer something { ... }`
-   *
-   * There are also cases with just an order definition like `@layer a, b, c;`,
-   * those are not detected here.
+   * This detects cases like `@layer something { ... }`,
+   * but not the cases of layers order definition like `@layer a, b, c;`
    */
   return rule.name === 'layer' && rule.nodes;
 };

@@ -62,7 +62,18 @@ export const getUnmatchableRules = (def: SingleStyleAst, filter?: SelectionFilte
 export const extractUnmatchable = (def: SingleStyleAst, filter?: SelectionFilter) =>
   convertToString(getUnmatchableRules(def, filter), def) + getAtRules(def);
 
-const getAtRules = (def: SingleStyleAst) => def.atRules.reduce((acc, rule) => acc + rule.css, '');
+const getAtRules = (def: SingleStyleAst) =>
+  def.atRules.reduce((acc, rule) => {
+    if (rule.kind === 'layer') {
+      /**
+       * These are the cases of cascade layer styles order definition,
+       * which should have an `;` in the end of the rule.
+       */
+      return acc + rule.css + ';';
+    }
+
+    return acc + rule.css;
+  }, '');
 
 export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyleAst) => {
   blocks.sort((ruleA, ruleB) => bodies[ruleA.declaration].id - bodies[ruleB.declaration].id);

@@ -215,7 +215,7 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* test.css */
-        @layer module, state
+        @layer module, state;
         /* test.css */
         .a { color: red; }
 
@@ -277,7 +277,7 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* index.css */
-        @layer module, state
+        @layer module, state;
         /* index.css */
 
         @layer state {
@@ -398,7 +398,7 @@ describe('extraction stories', () => {
       expect(extracted).toMatchInlineSnapshot(`
         "
         /* chunk.css */
-        @layer module, state
+        @layer module, state;
         /* index.css */
 
         @layer state {
