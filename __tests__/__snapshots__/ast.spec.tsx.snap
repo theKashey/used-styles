@@ -2,7 +2,10 @@
 
 exports[`test ast should handle keyframes and media 1`] = `
 Object {
-  "atRules": Array [
+  "bodies": Object {},
+  "file": "",
+  "selectors": Array [],
+  "unknownAtRules": Array [
     Object {
       "css": "@-webkit-keyframes ANIMATION_NAME{
       0%{-webkit-transform:rotate(0deg);}
@@ -19,15 +22,11 @@ Object {
       "kind": "keyframes",
     },
   ],
-  "bodies": Object {},
-  "file": "",
-  "selectors": Array [],
 }
 `;
 
 exports[`test ast smoke should map simple style 1`] = `
 Object {
-  "atRules": Array [],
   "bodies": Object {
     "1": Object {
       "end": Object {
@@ -261,6 +260,7 @@ Object {
       "selector": ".dou.ble",
     },
   ],
+  "unknownAtRules": Array [],
 }
 `;
 
