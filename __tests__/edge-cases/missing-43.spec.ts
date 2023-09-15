@@ -17,9 +17,9 @@ describe('missing styles', () => {
     expect(styles.ast['test.css'].selectors).toMatchInlineSnapshot(`
       Array [
         Object {
+          "atrules": Array [],
           "declaration": 1,
           "hash": ".a.b .c18suomu-1gpll6f0",
-          "media": Array [],
           "parents": Array [
             "a",
             "b",

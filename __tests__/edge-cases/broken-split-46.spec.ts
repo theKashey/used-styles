@@ -16,9 +16,9 @@ describe('missing styles', () => {
     expect(styles.ast['test.css'].selectors).toMatchInlineSnapshot(`
       Array [
         Object {
+          "atrules": Array [],
           "declaration": 1,
           "hash": ".-lottie-player svg path[fill=\\"rgb(255,255,255)\\"]1noj2ak-1etm6d20",
-          "media": Array [],
           "parents": Array [
             "-lottie-player",
           ],

@@ -156,9 +156,9 @@ Object {
   "file": "",
   "selectors": Array [
     Object {
+      "atrules": Array [],
       "declaration": 1,
       "hash": ".a-1sc6hdk00",
-      "media": Array [],
       "pieces": Array [
         "a",
       ],
@@ -166,9 +166,9 @@ Object {
       "selector": ".a",
     },
     Object {
+      "atrules": Array [],
       "declaration": 1,
       "hash": ".b .c-1sc6hdk-1gpll6f0",
-      "media": Array [],
       "parents": Array [
         "b",
       ],
@@ -179,9 +179,9 @@ Object {
       "selector": ".b .c",
     },
     Object {
+      "atrules": Array [],
       "declaration": 2,
       "hash": ".d ~ .e:not(focused)-1u2ggaf-o0go610",
-      "media": Array [],
       "parents": Array [
         "d",
       ],
@@ -192,11 +192,14 @@ Object {
       "selector": ".d ~ .e:not(focused)",
     },
     Object {
-      "declaration": 3,
-      "hash": ".c-13utu1a0-lnglh",
-      "media": Array [
-        "only screen and (max-width: 600px)",
+      "atrules": Array [
+        Object {
+          "kind": "media",
+          "value": "only screen and (max-width: 600px)",
+        },
       ],
+      "declaration": 3,
+      "hash": ".c-13utu1a01vns9a0",
       "pieces": Array [
         "c",
       ],
@@ -204,11 +207,14 @@ Object {
       "selector": ".c",
     },
     Object {
-      "declaration": 4,
-      "hash": ".a18suomu0-lnglh",
-      "media": Array [
-        "only screen and (max-width: 600px)",
+      "atrules": Array [
+        Object {
+          "kind": "media",
+          "value": "only screen and (max-width: 600px)",
+        },
       ],
+      "declaration": 4,
+      "hash": ".a18suomu01vns9a0",
       "pieces": Array [
         "a",
       ],
@@ -216,9 +222,9 @@ Object {
       "selector": ".a",
     },
     Object {
+      "atrules": Array [],
       "declaration": 5,
       "hash": ".a-1o1j63n00",
-      "media": Array [],
       "pieces": Array [
         "a",
       ],
@@ -226,9 +232,9 @@ Object {
       "selector": ".a",
     },
     Object {
+      "atrules": Array [],
       "declaration": 5,
       "hash": ".b-1o1j63n00",
-      "media": Array [],
       "pieces": Array [
         "b",
       ],
@@ -236,17 +242,17 @@ Object {
       "selector": ".b",
     },
     Object {
+      "atrules": Array [],
       "declaration": 5,
       "hash": "input-1o1j63n00",
-      "media": Array [],
       "pieces": Array [],
       "postfix": "",
       "selector": "input",
     },
     Object {
+      "atrules": Array [],
       "declaration": 6,
       "hash": ".dou.ble570uae00",
-      "media": Array [],
       "pieces": Array [
         "dou",
         "ble",
