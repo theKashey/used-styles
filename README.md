@@ -49,7 +49,7 @@ fast" to remove.
 
 - inlines all `@keyframe` animations
 - inlines all `html, body` and other tag-based selectors (hello css-reset)
-- inlines all rules matching last part of a selector (`.a .b` would be included if `.b` was used but `.a` was not)
+- undefined behavior if `@layer a,b,c` is used multiple times
 
 ### Speed
 
