@@ -4,15 +4,29 @@ import * as postcss from 'postcss';
 import { AtRule, Rule } from 'postcss';
 
 import { splitSelector } from '../utils/split-selectors';
-import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector } from './ast';
+import { AtRules, SingleStyleAst, StyleBodies, StyleBody, StyleSelector, ProcessedAtRule } from './ast';
 import { createRange, localRangeMax, localRangeMin, rangesIntervalEqual } from './ranges';
 import { extractParents, mapSelector } from './utils';
 
-const getAtRule = (rule: AtRule | Rule): string[] => {
+const isCascadeLayerStyles = (rule: AtRule) => {
+  /**
+   * This detects cases like `@layer something { ... }`,
+   * but not the cases of layers order definition like `@layer a, b, c;`
+   */
+  return rule.name === 'layer' && rule.nodes;
+};
+
+/**
+ * There are few cases of @-rules, which are getting special processing,
+ * like `@media` and `@layer` (cascade layer styles order definition).
+ *
+ * Any other kind of @-rule is not processed and is just passed to critical css as is.
+ */
+const getProcessedAtRule = (rule: AtRule | Rule): ProcessedAtRule[] => {
   const parent = rule.parent as AtRule;
 
-  if (parent && parent.name === 'media') {
-    return getAtRule(parent as any).concat(parent.params);
+  if (parent && (parent.name === 'media' || parent.name === 'layer')) {
+    return getProcessedAtRule(parent as any).concat({ value: parent.params, kind: parent.name });
   }
 
   return [];
@@ -70,7 +84,7 @@ const hashBody = (body: StyleBody) => {
 export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
   const root = postcss.parse(CSS);
   const selectors: StyleSelector[] = [];
-  const atRules: AtRules = [];
+  const unknownAtRules: AtRules = [];
 
   const bodies: StyleBodies = {};
 
@@ -81,10 +95,10 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
       return;
     }
 
-    if (rule.name !== 'media') {
+    if (rule.name !== 'media' && !isCascadeLayerStyles(rule)) {
       atParents.add(rule);
 
-      atRules /*[rule.params]*/
+      unknownAtRules /*[rule.params]*/
         .push({
           kind: rule.name,
           id: rule.params,
@@ -104,7 +118,7 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
       .map((sel) => sel.trim())
       .forEach((selector) => {
         const stand: StyleSelector = {
-          media: getAtRule(rule),
+          atrules: getProcessedAtRule(rule),
           selector,
           pieces: mapSelector(selector),
           postfix: getPostfix(selector),
@@ -138,7 +152,10 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
         });
 
         stand.declaration = assignBody(delc, bodies).id;
-        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.postfix)}${hashString(stand.media.join())}`;
+
+        stand.hash = `${selector}${hashBody(delc)}${hashString(stand.postfix)}${hashString(
+          stand.atrules.map((rule) => rule.kind + rule.value).join()
+        )}`;
 
         selectors.push(stand);
       });
@@ -148,6 +165,6 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
     file,
     selectors,
     bodies,
-    atRules,
+    unknownAtRules,
   };
 };

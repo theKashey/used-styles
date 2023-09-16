@@ -2,7 +2,7 @@ import { kashe } from 'kashe';
 import * as postcss from 'postcss';
 
 import { SelectionFilter } from '../types';
-import { SingleStyleAst, StyleBody, StyleRule, StyleSelector } from './ast';
+import { ProcessedAtRule, SingleStyleAst, StyleBody, StyleRule, StyleSelector } from './ast';
 
 const separator = process.env.NODE_ENV === 'production' ? '' : '\n';
 
@@ -18,12 +18,12 @@ const createDecl = (decl: StyleRule) => postcss.decl(decl) + ';';
 
 const declsToString = (rules: StyleRule[]) => rules.map((decl) => createDecl(decl)).join(separator);
 
-const getMedia = ({ media }: { media: string[] }) => {
+const getProcessedAtRules = ({ atrules }: { atrules: ProcessedAtRule[] }) => {
   const prefix: string[] = [];
   const postfix: string[] = [];
 
-  media.forEach((currentMedia) => {
-    prefix.push(`@media ${currentMedia} {`);
+  atrules.forEach((currentRule) => {
+    prefix.push(`@${currentRule.kind} ${currentRule.value} {`);
     postfix.push('}');
   });
 
@@ -62,22 +62,33 @@ export const getUnmatchableRules = (def: SingleStyleAst, filter?: SelectionFilte
 export const extractUnmatchable = (def: SingleStyleAst, filter?: SelectionFilter) =>
   convertToString(getUnmatchableRules(def, filter), def) + getAtRules(def);
 
-const getAtRules = (def: SingleStyleAst) => def.atRules.reduce((acc, rule) => acc + rule.css, '');
+const getAtRules = (def: SingleStyleAst) =>
+  def.unknownAtRules.reduce((acc, rule) => {
+    if (rule.kind === 'layer') {
+      /**
+       * These are the cases of cascade layer styles order definition,
+       * which should have an `;` in the end of the rule.
+       */
+      return acc + rule.css + ';';
+    }
+
+    return acc + rule.css;
+  }, '');
 
 export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyleAst) => {
   blocks.sort((ruleA, ruleB) => bodies[ruleA.declaration].id - bodies[ruleB.declaration].id);
 
   const result: string[] = [];
 
-  let lastMedia = ['', ''];
+  let lastProcessedAtRule = ['', ''];
 
   blocks.forEach((block, index) => {
-    const media = getMedia(block);
+    const processedAtRule = getProcessedAtRules(block);
 
-    if (media[0] !== lastMedia[0]) {
-      result.push(lastMedia[1]);
-      lastMedia = media;
-      result.push(lastMedia[0]);
+    if (processedAtRule[0] !== lastProcessedAtRule[0]) {
+      result.push(lastProcessedAtRule[1]);
+      lastProcessedAtRule = processedAtRule;
+      result.push(lastProcessedAtRule[0]);
     }
 
     if (index < blocks.length - 1 && block.declaration === blocks[index + 1].declaration) {
@@ -87,7 +98,7 @@ export const convertToString = (blocks: StyleSelector[], { bodies }: SingleStyle
     }
   });
 
-  result.push(lastMedia[1]);
+  result.push(lastProcessedAtRule[1]);
 
   return result.join(separator);
 };

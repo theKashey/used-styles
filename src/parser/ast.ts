@@ -6,12 +6,17 @@ export interface StyleRule {
   important: boolean;
 }
 
+export interface ProcessedAtRule {
+  kind: 'media' | 'layer';
+  value: string;
+}
+
 export interface StyleSelector {
   selector: string;
   postfix: string;
 
   pieces: string[];
-  media: string[];
+  atrules: ProcessedAtRule[];
   parents?: string[];
 
   declaration: number;
@@ -39,7 +44,7 @@ export interface SingleStyleAst {
   file: string;
   selectors: StyleSelector[];
   bodies: StyleBodies;
-  atRules: AtRules;
+  unknownAtRules: AtRules;
 }
 
 export type StyleAst = Record<string, SingleStyleAst>;
