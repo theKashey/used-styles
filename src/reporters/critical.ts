@@ -59,9 +59,35 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
 
       const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, styleCallback), 'utf-8');
 
+      const chunkDataStr = chunkData.toString('utf-8');
+
+      const lastOpeningBrace = chunkDataStr.lastIndexOf('<');
+
+      if (lastOpeningBrace !== -1 && chunkDataStr.substr(lastOpeningBrace, 6) === '<style') {
+        // last tag that was opened was a style tag.
+        // we should not inject style tags into existing style tags,
+        // so we inject it as a sibling right before it.
+        const beforeOpeningStyleTag = chunkDataStr.substr(0, lastOpeningBrace);
+        const afterOpeningStyleTag = chunkDataStr.substr(lastOpeningBrace);
+        _callback(undefined, beforeOpeningStyleTag + injections.join('') + afterOpeningStyleTag);
+
+        return;
+      }
+
+      const firstOpeningBrace = chunkDataStr.indexOf('<');
+
+      if (firstOpeningBrace !== -1 && chunkDataStr.substr(firstOpeningBrace, 8) === '</style>') {
+        // we are in the middle of a style tag.
+        // the next injection should only come after the style tag is closed.
+        const beforeClosingStyleTag = chunkDataStr.substr(0, firstOpeningBrace + 8);
+        const afterClosingStyleTag = chunkDataStr.substr(firstOpeningBrace + 8);
+        _callback(undefined, beforeClosingStyleTag + injections.join('') + afterClosingStyleTag);
+
+        return;
+      }
+
       _callback(undefined, injections.join('') + chunkData);
     },
-
     flush(flushCallback) {
       flushCallback(undefined, line.tail);
     },

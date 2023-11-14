@@ -77,6 +77,7 @@ describe('React css stream', () => {
 
       // should not include nested styles
       expect(htmlCritical.includes('<style><style')).toBe(false);
+      expect(htmlCritical.includes('</style></style')).toBe(false);
     });
   });
 });
