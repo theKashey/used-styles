@@ -57,23 +57,30 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
 
       tick++;
 
-      const chunkData = Buffer.from(process(chunk.toString('utf-8'), line, styleCallback), 'utf-8');
+      const chunkData = process(chunk.toString('utf-8'), line, styleCallback);
 
-      const chunkDataStr = chunkData.toString('utf-8');
+      const injectionsBlock = injections.join('');
 
-      const firstOpeningBrace = chunkDataStr.indexOf('<');
+      // protection from "long" chunks, mostly long inline style tags we might interfere with
+      const firstOpeningBrace = chunkData.indexOf('<');
+      const styleTag = '</style>';
 
-      if (firstOpeningBrace !== -1 && chunkDataStr.substr(firstOpeningBrace, 8) === '</style>') {
+      if (
+        firstOpeningBrace !== -1 &&
+        chunkData.substring(firstOpeningBrace, firstOpeningBrace + styleTag.length) === styleTag
+      ) {
         // we are in the middle of a style tag.
         // the next injection should only come after the style tag is closed.
-        const beforeClosingStyleTag = chunkDataStr.substr(0, firstOpeningBrace + 8);
-        const afterClosingStyleTag = chunkDataStr.substr(firstOpeningBrace + 8);
-        _callback(undefined, beforeClosingStyleTag + injections.join('') + afterClosingStyleTag);
+        const splitLocation = firstOpeningBrace + styleTag.length;
+        const beforeClosingStyleTag = chunkData.substring(0, splitLocation);
+        const afterClosingStyleTag = chunkData.substring(splitLocation);
+        _callback(undefined, beforeClosingStyleTag + injectionsBlock + afterClosingStyleTag);
 
         return;
       }
 
-      _callback(undefined, injections.join('') + chunkData);
+      // inject into the beginning of the chunk
+      _callback(undefined, injectionsBlock + chunkData);
     },
     flush(flushCallback) {
       flushCallback(undefined, line.tail);
