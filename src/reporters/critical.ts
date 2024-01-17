@@ -34,6 +34,14 @@ function getClosingTag(tag: string): string {
   return `</${tag}>`;
 }
 
+const PURE_TAGS = ['style', 'script', 'select'];
+const PURE_TAG_PATTERN = new RegExp(
+  // matches opening tag of any of the pure tags without a corresponding closing tag.
+  // parsing with regex should be good enough, or should we use a proper parser?
+  PURE_TAGS.map((tag) => `<(${tag})\\b[^>]*>(?:(?!</${tag}>)[\\s\\S])*$`).join('|'),
+  'i'
+);
+
 export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
@@ -85,11 +93,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
       }
 
       // protection from chunks with elements that can't contain styles
-      // currently supported tags: 'script', 'style', 'select'.
-      // parsing with regex should be good enough, or should we use a proper parser?
-      const hasOpenedPureTagMatch = chunkData.match(
-        /<(style)\b[^>]*>(?:(?!<\/style>)[\s\S])*$|<(script)\b[^>]*>(?:(?!<\/script>)[\s\S])*$|<(select)\b[^>]*>(?:(?!<\/select>)[\s\S])*$/i
-      );
+      const hasOpenedPureTagMatch = chunkData.match(PURE_TAG_PATTERN);
 
       if (!hasOpenedPureTagMatch) {
         if (flushContentBuffer) {
