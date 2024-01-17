@@ -30,9 +30,16 @@ export const processReact = (chunk: string, _line: CacheLine, callback: (styles:
   return chunk;
 };
 
+function getClosingTag(tag: string): string {
+  return `</${tag}>`;
+}
+
 export const createCriticalStyleStream = (def: StyleDefinition) => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
+  const contentBuffer: string[] = [];
+  let bufferUntil: string | null = null;
+  let flushContentBuffer = false;
 
   const filter = createUsedFilter();
 
@@ -49,6 +56,7 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
     transform(chunk, _, _callback) {
       assertIsReady(def);
       injections = [];
+      flushContentBuffer = false;
 
       if (tick === 0) {
         const staticStyles = extractAllUnmatchableAsString(def);
@@ -61,26 +69,59 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
 
       const injectionsBlock = injections.join('');
 
-      // protection from "long" chunks, mostly long inline style tags we might interfere with
-      const firstOpeningBrace = chunkData.indexOf('<');
-      const styleTag = '</style>';
+      if (bufferUntil) {
+        const closingTagIndex = chunkData.indexOf(bufferUntil);
 
-      if (
-        firstOpeningBrace !== -1 &&
-        chunkData.substring(firstOpeningBrace, firstOpeningBrace + styleTag.length) === styleTag
-      ) {
-        // we are in the middle of a style tag.
-        // the next injection should only come after the style tag is closed.
-        const splitLocation = firstOpeningBrace + styleTag.length;
-        const beforeClosingStyleTag = chunkData.substring(0, splitLocation);
-        const afterClosingStyleTag = chunkData.substring(splitLocation);
-        _callback(undefined, beforeClosingStyleTag + injectionsBlock + afterClosingStyleTag);
+        if (closingTagIndex !== -1) {
+          // tag was closed, we can flush the buffer
+          flushContentBuffer = true;
+          bufferUntil = null;
+        } else {
+          // tag was still not closed yet, buffer the whole chunk.
+          contentBuffer.push(chunkData);
+
+          return;
+        }
+      }
+
+      // protection from chunks with elements that can't contain styles
+      // currently supported tags: 'script', 'style', 'select'.
+      // parsing with regex should be good enough, or should we use a proper parser?
+      const hasOpenedPureTagMatch = chunkData.match(
+        /<(style)\b[^>]*>(?:(?!<\/style>)[\s\S])*$|<(script)\b[^>]*>(?:(?!<\/script>)[\s\S])*$|<(select)\b[^>]*>(?:(?!<\/select>)[\s\S])*$/i
+      );
+
+      if (!hasOpenedPureTagMatch) {
+        if (flushContentBuffer) {
+          // inject into the beginning of the chunk and flush buffered content
+          _callback(undefined, injectionsBlock + contentBuffer.join() + chunkData);
+
+          contentBuffer.length = 0;
+        } else {
+          // inject into the beginning of the chunk
+          _callback(undefined, injectionsBlock + chunkData);
+        }
 
         return;
       }
 
-      // inject into the beginning of the chunk
-      _callback(undefined, injectionsBlock + chunkData);
+      // we are in the middle of a pure tag.
+      // we need to wait with style injection until the tag is closed.
+      const contentBeforePureTag = chunkData.substring(0, hasOpenedPureTagMatch.index);
+      const contentAfterPureTag = chunkData.substring(hasOpenedPureTagMatch.index as number);
+
+      if (flushContentBuffer) {
+        // inject into the beginning of the chunk and flush buffered content
+        _callback(undefined, injectionsBlock + contentBuffer.join() + contentBeforePureTag);
+
+        contentBuffer.length = 0;
+      } else {
+        // inject into the beginning of the chunk
+        _callback(undefined, injectionsBlock + contentBeforePureTag);
+      }
+
+      contentBuffer.push(contentAfterPureTag);
+      bufferUntil = getClosingTag(hasOpenedPureTagMatch[1] || hasOpenedPureTagMatch[2] || hasOpenedPureTagMatch[3]);
     },
     flush(flushCallback) {
       flushCallback(undefined, line.tail);
