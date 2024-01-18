@@ -49,7 +49,6 @@ describe('React css stream', () => {
       const _htmlCritical = streamString(output.pipe(criticalStream));
 
       htmlCritical = await _htmlCritical;
-      console.log('htmlCritical: ', htmlCritical);
 
       // should not include options or selects with nested styles
       // should not include options or selects with nested styles

@@ -88,6 +88,8 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
           // tag was still not closed yet, buffer the whole chunk.
           contentBuffer.push(chunkData);
 
+          _callback(undefined, '');
+
           return;
         }
       }
@@ -109,8 +111,8 @@ export const createCriticalStyleStream = (def: StyleDefinition) => {
         return;
       }
 
-      // we are in the middle of a pure tag.
-      // we need to wait with style injection until the tag is closed.
+      // we ended the chunk in the middle of a pure tag.
+      // we need to wait with further injections until the this tag is closed.
       const contentBeforePureTag = chunkData.substring(0, hasOpenedPureTagMatch.index);
       const contentAfterPureTag = chunkData.substring(hasOpenedPureTagMatch.index as number);
 
