@@ -190,11 +190,52 @@ In case or React rendering you may use **interleaved streaming**, which would no
 similar how StyledComponents works
 
 ```js
-import {discoverProjectStyles, createLink, createStyleStream} from 'used-styles';
-import MultiStream from 'multistream';
+import express from 'express';
+import { 
+  discoverProjectStyles, 
+  loadStyleDefinitions,
+  createCriticalStyleStream, 
+  createStyleStream,
+  createLink,
+} from 'used-styles';
+
+const app = express();
 
 // generate lookup table on server start
-const stylesLookup = discoverProjectStyles('./build'); // __dirname usually
+const stylesLookup = isProduction
+  ? discoverProjectStyles('./dist/client') 
+  // load styles for development
+  : loadStyleDefinitions(async () => []);
+
+app.use('*', async (req, res) => {
+  await stylesLookup;
+
+  try {
+    const renderApp = (await import('./dist/server/entry-server.js')).default;
+
+    // create a style steam
+    const styledStream = createStyleStream(stylesLookup, (style) => {
+      // _return_ link tag, and it will be appended to the stream output
+      return createLink(`dist/${style}`) // <link href="dist/mystyle.css />
+    });
+
+    // or create critical CSS stream - it will inline all styles
+    const styledStream = createCriticalStyleStream(stylesLookup); // <style>.myClass {...
+
+    await renderApp({ res, styledStream });
+  } catch (err) {
+    res.sendStatus(500);
+  }
+});
+```
+
+```js
+// entry-server.js
+import React from 'react';
+import { renderToPipeableStream } from 'react-dom/server';
+import MultiStream from 'multistream';
+import { Readable } from 'node:stream';
+import App from './App';
 
 // small utility for "readable" streams
 const readableString = string => {
@@ -205,37 +246,52 @@ const readableString = string => {
   return s;
 };
 
-async function MyRender() {
-  // render App
-  const htmlStream = ReactDOM.renderToNodeStream(<App/>)
+const ABORT_DELAY = 10000;
 
-  await stylesLookup;
-  // create a style steam
-  const styledStream = createStyleStream(stylesLookup, (style) => {
-    // _return_ link tag, and it will be appended to the stream output
-    return createLink(`dist/${style}`) // <link href="dist/mystyle.css />
-  });
+async function renderApp({ res, styledStream }) {
+  let didError = false;
+  
+  const { pipe, abort } = renderToPipeableStream(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    {
+      onShellError() {
+        res.sendStatus(500);
+      },
+      onAllReady() {
+        res.status(didError ? 500 : 200);
+        res.set({ 'Content-Type': 'text/html' });
 
-  // or create critical CSS stream - it will inline all styles
-  const styledStream = createCriticalStyleStream(stylesLookup); // <style>.myClass {...
+        // allow client to start loading js bundle
+        res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script></head><body><div id="root">`);
+  
+        const endStream = readableString('</div></body></html>');
 
-  // allow client to start loading js bundle
-  res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script>`);
+        // concatenate all streams together
+        const streams = [
+          styledStream, // the main content
+          endStream, // closing tags
+        ];
 
-  const middleStream = readableString('</head><body><div id="root">');
-  const endStream = readableString('</head><body>');
+        new MultiStream(streams).pipe(res);
 
-  // concatenate all steams together
-  const streams = [
-    middleStream, // end of a header, and start of a body
-    styledStream, // the main content
-    endStream,    // closing tags
-  ];
+        // start by piping react and styled transform stream
+        pipe(styledStream);
+      },
+      onError(error) {
+        didError = true;
+        console.error(error);
+      }
+    },
+  );
 
-  MultiStream(streams).pipe(res);
+  setTimeout(() => {
+    abort();
+  }, ABORT_DELAY);
+}
 
-// start by piping react and styled transform stream
-  htmlStream.pipe(styledStream);
+export default renderApp;
 ```
 
 **!! THIS IS NOT THE END !!** Interleaving links and react output would break a client side rehydration, as long as _
@@ -244,9 +300,20 @@ injected_ links were not rendered by React, and not expected to present in the "
 You have to move injected styles out prior rehydration.
 
 ```js
+import React from 'react';
 import { moveStyles } from 'used-styles/moveStyles';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-moveStyles();
+// Call before `ReactDOM.hydrateRoot`
+moveStyles()
+
+ReactDOM.hydrateRoot(
+  document.getElementById('root'),
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
 ```
 
 You might want to remove styles after rehydration to prevent duplication. Double check that corresponding _real_ CSS is
