@@ -1,7 +1,3 @@
-[
-  {
-    "name": "moveStyles.js",
-    "passed": true,
-    "size": 162
-  }
-]
+{
+  "error": "WebpackOptionsValidationError: Invalid configuration object. Webpack has been initialised using a configuration object that does not match the API schema.\n - configuration.entry['index'] should be an non-empty array.\n   -> A non-empty array of non-empty strings\n    at webpack (/Users/akorzunov/dev/github/loaders/used-styles/node_modules/webpack/lib/webpack.js:31:9)\n    at /Users/akorzunov/dev/github/loaders/used-styles/node_modules/@size-limit/webpack/run-webpack.js:5:20\n    at new Promise (<anonymous>)\n    at runWebpack (/Users/akorzunov/dev/github/loaders/used-styles/node_modules/@size-limit/webpack/run-webpack.js:4:10)\n    at Object.step40 (/Users/akorzunov/dev/github/loaders/used-styles/node_modules/@size-limit/webpack/index.js:59:38)\n    at /Users/akorzunov/dev/github/loaders/used-styles/node_modules/size-limit/calc.js:8:62\n    at Array.map (<anonymous>)\n    at exec (/Users/akorzunov/dev/github/loaders/used-styles/node_modules/size-limit/calc.js:8:41)\n    at calc (/Users/akorzunov/dev/github/loaders/used-styles/node_modules/size-limit/calc.js:14:42)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)"
+}

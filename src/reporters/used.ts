@@ -44,7 +44,10 @@ export const processReact = (
   return chunk;
 };
 
-export const createStyleStream = (def: StyleDefinition, callback: (styleFile: string) => string | undefined | void) => {
+export const createStyleStream = (
+  def: StyleDefinition,
+  callback: (styleFile: string) => string | undefined | void
+): Transform => {
   const line = createLine();
   const styles: Record<string, boolean> = {};
   let injections: Array<string | undefined> = [];

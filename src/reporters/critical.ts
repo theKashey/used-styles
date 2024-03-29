@@ -42,7 +42,7 @@ const PURE_TAG_PATTERN = new RegExp(
   'i'
 );
 
-export const createCriticalStyleStream = (def: StyleDefinition) => {
+export const createCriticalStyleStream = (def: StyleDefinition): Transform => {
   const line = createLine();
   let injections: Array<string | undefined> = [];
   const contentBuffer: string[] = [];
