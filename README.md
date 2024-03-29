@@ -233,18 +233,7 @@ app.use('*', async (req, res) => {
 // entry-server.js
 import React from 'react';
 import { renderToPipeableStream } from 'react-dom/server';
-import MultiStream from 'multistream';
-import { Readable } from 'node:stream';
 import App from './App';
-
-// small utility for "readable" streams
-const readableString = string => {
-  const s = new Readable();
-  s.push(string);
-  s.push(null);
-  s._read = () => true;
-  return s;
-};
 
 const ABORT_DELAY = 10000;
 
@@ -265,19 +254,15 @@ async function renderApp({ res, styledStream }) {
 
         // allow client to start loading js bundle
         res.write(`<!DOCTYPE html><html><head><script defer src="client.js"></script></head><body><div id="root">`);
-  
-        const endStream = readableString('</div></body></html>');
 
-        // concatenate all streams together
-        const streams = [
-          styledStream, // the main content
-          endStream, // closing tags
-        ];
-
-        new MultiStream(streams).pipe(res);
-
+        styledStream.pipe(res, { end: false });
+        
         // start by piping react and styled transform stream
         pipe(styledStream);
+
+        styledStream.on('end', () => {
+          res.end('</div></body></html>');
+        });
       },
       onError(error) {
         didError = true;
