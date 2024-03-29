@@ -7,7 +7,7 @@
   "module": "dist/es2015/index.js",
   "types": "dist/es5/index.d.ts",
   "scripts": {
-    "build": "lib-builder build && yarn size:report",
+    "build": "lib-builder build",
     "test": "jest",
     "prepublish-only": "yarn changelog && yarn build",
     "lint": "lib-builder lint",
@@ -34,8 +34,7 @@
   },
   "files": [
     "dist",
-    "moveStyles.js",
-    "moveStyles.d.ts"
+    "moveStyles"
   ],
   "keywords": [
     "nodejs",
