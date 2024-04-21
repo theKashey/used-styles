@@ -1,10 +1,21 @@
 import fs from 'node:fs/promises'
 import express from 'express'
+import { 
+  discoverProjectStyles, 
+  loadStyleDefinitions,
+  getCriticalStyles,
+} from 'used-styles'
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
 const port = process.env.PORT || 5173
 const base = process.env.BASE || '/'
+
+// generate lookup table on server start
+const stylesLookup = isProduction
+  ? discoverProjectStyles('./dist/client')
+  // in dev mode vite injects all styles to <head/> element
+  : loadStyleDefinitions(async () => [])
 
 // Cached production assets
 const templateHtml = isProduction
@@ -37,6 +48,8 @@ if (!isProduction) {
 // Serve HTML
 app.use('*', async (req, res) => {
   try {
+    await stylesLookup
+
     const url = req.originalUrl.replace(base, '')
 
     let template
@@ -53,9 +66,14 @@ app.use('*', async (req, res) => {
 
     const rendered = await render(url, ssrManifest)
 
+    const criticalCSS = getCriticalStyles(rendered.html, stylesLookup)
+
+    const appHead = (rendered.head ?? '') + criticalCSS
+    const appHtml = rendered.html ?? ''
+
     const html = template
-      .replace(`<!--app-head-->`, rendered.head ?? '')
-      .replace(`<!--app-html-->`, rendered.html ?? '')
+      .replace(`<!--app-head-->`, appHead)
+      .replace(`<!--app-html-->`, appHtml)
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html)
   } catch (e) {
