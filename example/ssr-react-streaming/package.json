@@ -15,7 +15,8 @@
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sirv": "^2.0.4"
+    "sirv": "^2.0.4",
+    "used-styles": "^2.6.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

@@ -1,11 +1,22 @@
 import fs from 'node:fs/promises'
 import express from 'express'
+import {
+  discoverProjectStyles,
+  loadStyleDefinitions,
+  createCriticalStyleStream,
+} from 'used-styles'
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
 const port = process.env.PORT || 5173
 const base = process.env.BASE || '/'
 const ABORT_DELAY = 10000
+
+// generate lookup table on server start
+const stylesLookup = isProduction
+  ? discoverProjectStyles('./dist/client')
+  // in dev mode vite injects all styles to <head/> element
+  : loadStyleDefinitions(async () => [])
 
 // Cached production assets
 const templateHtml = isProduction
@@ -38,6 +49,8 @@ if (!isProduction) {
 // Serve HTML
 app.use('*', async (req, res) => {
   try {
+    await stylesLookup
+
     const url = req.originalUrl.replace(base, '')
 
     let template
@@ -52,6 +65,8 @@ app.use('*', async (req, res) => {
       render = (await import('./dist/server/entry-server.js')).render
     }
 
+    const styledStream = createCriticalStyleStream(stylesLookup)
+
     let didError = false
 
     const { pipe, abort } = render(url, ssrManifest, {
@@ -60,7 +75,8 @@ app.use('*', async (req, res) => {
         res.set({ 'Content-Type': 'text/html' })
         res.send('<h1>Something went wrong</h1>')
       },
-      onAllReady() {
+      // Can use also `onAllReady` callback
+      onShellReady() {
         res.status(didError ? 500 : 200)
         res.set({ 'Content-Type': 'text/html' })
 
@@ -69,12 +85,16 @@ app.use('*', async (req, res) => {
         // React 19 supports document metadata out of box, 
         // but for react 18 we can use `react-helmet-async` here:
         // htmlStart = htmlStart.replace(`<!--app-head-->`, helmet.title.toString())
-
+        
         res.write(htmlStart)
-        pipe(res)
-        res.write(htmlEnd)
 
-        res.end()
+        styledStream.pipe(res, { end: false })
+
+        pipe(styledStream)
+
+        styledStream.on('end', () => {
+          res.end(htmlEnd)
+        })
       },
       onError(error) {
         didError = true
