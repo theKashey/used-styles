@@ -136,6 +136,12 @@ enableReactOptimization(); // just makes it a but faster
 
 # Example
 
+## Demo
+- [React SSR](/example/ssr-react/README.md)
+- [React SSR + TS](/example/ssr-react-ts/README.md)
+- [React Streaming SSR](/example/ssr-react-streaming/README.md)
+- [React Streaming SSR + TS](/example/ssr-react-streaming-ts/README.md)
+
 ## Static rendering
 
 There is nothing interesting here - just render, just `getUsedStyles`.

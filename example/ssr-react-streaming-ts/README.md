@@ -1,0 +1,7 @@
+# React Streaming SSR + TS demo
+
+This template is build using `vite` and uses `renderToPipeableStream` for SSR.
+To run the demo:
+
+- dev: `yarn install && yarn dev`.
+- prod: `yarn install && yarn build && yarn preview`
