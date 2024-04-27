@@ -38,7 +38,7 @@ describe('media selectors', () => {
     expect(css).toEqual('');
   });
 
-  it('should extract unmatable parts', () => {
+  it('should extract unmatchable parts', () => {
     const css = extractUnmatchableFromAst({ ast });
 
     expect(css[0].css).toEqual(`body { color: red; }
