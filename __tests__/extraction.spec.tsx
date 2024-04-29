@@ -178,6 +178,36 @@ describe('extraction stories', () => {
     `);
   });
 
+  it('should ignore media rules nested to unknown at rules', async () => {
+    const styles: StyleDefinition = loadStyleDefinitions(
+      () => ['test.css'],
+      () => `
+@supports (display:grid) {
+  .a { display: grid; }
+
+  @media only print {
+    .a { color: red; }
+  }
+}
+`
+    );
+    await styles;
+
+    const extracted = getCriticalRules('<div class="a">', styles);
+
+    expect(extracted).toMatchInlineSnapshot(`
+        "
+        /* test.css */
+        @supports (display:grid) {
+          .a { display: grid; }
+
+          @media only print {
+            .a { color: red; }
+          }
+        }"
+      `);
+  });
+
   describe('CSS Cascade Layers', () => {
     it('handles CSS Cascade Layers', async () => {
       const styles = loadStyleDefinitions(

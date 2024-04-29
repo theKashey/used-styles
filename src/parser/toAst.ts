@@ -95,6 +95,12 @@ export const buildAst = (CSS: string, file = ''): SingleStyleAst => {
       return;
     }
 
+    if (atParents.has(rule.parent)) {
+      atParents.add(rule);
+
+      return;
+    }
+
     if (rule.name !== 'media' && !isCascadeLayerStyles(rule)) {
       atParents.add(rule);
 
