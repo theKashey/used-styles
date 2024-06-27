@@ -137,8 +137,49 @@ enableReactOptimization(); // just makes it a but faster
 ## Serialize API
 
 Use it to separate generation of styles lookup from your runtime.
+
 It is useful in cases, where you can't directly use Discovery APIs on your client CSS bundles during app's runtime, e.g. various serverless runtimes.
 Also it may be useful for you, if you want to save on the size of your container for the server app, since it allows you to only load styles lookup into it, without CSS bundles.
+
+1. `serializeStylesLookup(def: StyleDef): SerializedStyleDef` - creates a serializable object from original styles lookup. Result can be then stringified with `JSON.stringify`
+2. `loadSerializedLookup(def: SerializedStyleDef): StyleDef` - transforms serialized style definition back to normal `StyleDef`, which can be used with any Scanner API
+
+### Example
+
+#### During your build
+
+1. Add separate script to generate style lookup and store it as you like.
+```js
+// project/scripts/generate_styles_lookup.mjs
+import { serializeStylesLookup, discoverProjectStyles } from 'used-styles'
+import { writeFileSync } from 'fs'
+
+const stylesLookup = discoverProjectStyles('./path/to/dist/client');
+
+await stylesLookup;
+
+writeFileSync('./path/to/dist/server/styles-lookup.json', JSON.stringify(serializeStyles(lookup)))
+```
+2. Run this code after your build
+```sh
+yarn build
+node ./scripts/generate_styles_lookup.mjs
+```
+
+Notice, that you can store serialized lookup in any way, that suits you and your case, example above is not the only valid option.
+
+#### During your runtime
+
+1. Access previously created and stored styles lookup, convert it to `StyleDef` with `loadSerializedLookup` and use it normally
+```js
+import { loadSerializedLookup } from 'used-styles'
+
+const stylesLookup = loadSerializedLookup(require('./dist/server/styles-lookup.json');
+
+// ...
+
+getCriticalStyles(markup, stylesLookup)
+```
 
 # Example
 
