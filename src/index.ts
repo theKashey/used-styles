@@ -8,7 +8,7 @@ import { discoverProjectStyles, loadStyleDefinitions, parseProjectStyles } from 
 
 import { createUsedFilter as createUsedSelectorsFilter } from './utils/cache';
 
-export { serializeStylesLookup, deserializeStylesLookup } from './serialize';
+export { serializeStylesLookup, loadSerializedLookup } from './serialize';
 
 export { UsedTypes, StyleDefinition, SelectionFilter } from './types';
 

@@ -14,7 +14,7 @@ import {
   getUsedStyles,
   parseProjectStyles,
   serializeStylesLookup,
-  deserializeStylesLookup,
+  loadSerializedLookup,
 } from '../src';
 import { StyleDefinition } from '../src/types';
 
@@ -110,7 +110,7 @@ describe('File based css stream', () => {
   test('works with (de)serialized styles definition', async () => {
     await styles;
 
-    const lookupAfterSerialization = deserializeStylesLookup(JSON.parse(JSON.stringify(serializeStylesLookup(styles))));
+    const lookupAfterSerialization = loadSerializedLookup(JSON.parse(JSON.stringify(serializeStylesLookup(styles))));
 
     expect(getUsedStyles('', lookupAfterSerialization)).toEqual(['file1.css']);
     expect(getCriticalStyles('', lookupAfterSerialization)).toMatchSnapshot();

@@ -11,7 +11,7 @@ export function serializeStylesLookup(def: StyleDefinition): SerializedStyleDefi
   };
 }
 
-export function deserializeStylesLookup(def: SerializedStyleDefinition): StyleDefinition {
+export function loadSerializedLookup(def: SerializedStyleDefinition): StyleDefinition {
   assertValidLookup(def);
 
   return {

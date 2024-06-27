@@ -1,6 +1,6 @@
 import {
   alterProjectStyles,
-  deserializeStylesLookup,
+  loadSerializedLookup,
   getCriticalRules,
   loadStyleDefinitions,
   serializeStylesLookup,
@@ -228,7 +228,7 @@ describe('extraction stories', () => {
       await styles;
 
       const serializedDefinition = JSON.stringify(serializeStylesLookup(styles));
-      const deserializedDefinition = deserializeStylesLookup(JSON.parse(serializedDefinition));
+      const deserializedDefinition = loadSerializedLookup(JSON.parse(serializedDefinition));
 
       expect(deserializedDefinition.lookup).toEqual(styles.lookup);
       expect(deserializedDefinition.ast).toEqual(styles.ast);
@@ -257,11 +257,11 @@ describe('extraction stories', () => {
         `"used-styles: style definitions has to be created using discoverProjectStyles or loadStyleDefinitions"`
       );
 
-      expect(() => deserializeStylesLookup({} as any)).toThrowErrorMatchingInlineSnapshot(
+      expect(() => loadSerializedLookup({} as any)).toThrowErrorMatchingInlineSnapshot(
         `"used-styles: serialized style definition should be created with serializeStylesLookup"`
       );
 
-      expect(() => deserializeStylesLookup('invalid' as any)).toThrowErrorMatchingInlineSnapshot(
+      expect(() => loadSerializedLookup('invalid' as any)).toThrowErrorMatchingInlineSnapshot(
         `"used-styles: got a string instead of serialized style definition object, make sure to parse it back to JS object first"`
       );
     });
