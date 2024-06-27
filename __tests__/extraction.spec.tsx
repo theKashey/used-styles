@@ -1,4 +1,11 @@
-import { alterProjectStyles, getCriticalRules, loadStyleDefinitions, StyleDefinition } from '../src';
+import {
+  alterProjectStyles,
+  deserializeStylesLookup,
+  getCriticalRules,
+  loadStyleDefinitions,
+  serializeStylesLookup,
+  StyleDefinition,
+} from '../src';
 
 describe('extraction stories', () => {
   it('handles duplicated selectors', async () => {
@@ -206,6 +213,58 @@ describe('extraction stories', () => {
           }
         }"
       `);
+  });
+
+  describe('Serializable definitions', () => {
+    test('Serialized defintion is equal to original', async () => {
+      const styles: StyleDefinition = loadStyleDefinitions(
+        () => ['test.css'],
+        () => `
+  @media screen and (min-width:1350px){.content__L0XJ\\+{color:red}}
+  .primary__L4\\+dg{ color: blue}
+  .primary__L4+dg{ color: wrong}
+          `
+      );
+      await styles;
+
+      const serializedDefinition = JSON.stringify(serializeStylesLookup(styles));
+      const deserializedDefinition = deserializeStylesLookup(JSON.parse(serializedDefinition));
+
+      expect(deserializedDefinition.lookup).toEqual(styles.lookup);
+      expect(deserializedDefinition.ast).toEqual(styles.ast);
+      expect(deserializedDefinition.urlPrefix).toEqual(styles.urlPrefix);
+      expect(deserializedDefinition.isReady).toEqual(styles.isReady);
+      expect(typeof deserializedDefinition.then).toEqual(typeof styles.then);
+    });
+
+    test('Serializing unready definition throws', async () => {
+      const styles: StyleDefinition = loadStyleDefinitions(
+        async () => ['test.css'],
+        async () => `
+  @media screen and (min-width:1350px){.content__L0XJ\\+{color:red}}
+  .primary__L4\\+dg{ color: blue}
+  .primary__L4+dg{ color: wrong}
+          `
+      );
+
+      expect(() => serializeStylesLookup(styles)).toThrowErrorMatchingInlineSnapshot(
+        `"used-styles: style definitions are not ready yet. You should \`await discoverProjectStyles(...)\`"`
+      );
+    });
+
+    test('Invalid value in serializers throws', async () => {
+      expect(() => serializeStylesLookup({} as any)).toThrowErrorMatchingInlineSnapshot(
+        `"used-styles: style definitions has to be created using discoverProjectStyles or loadStyleDefinitions"`
+      );
+
+      expect(() => deserializeStylesLookup({} as any)).toThrowErrorMatchingInlineSnapshot(
+        `"used-styles: serialized style definition should be created with serializeStylesLookup"`
+      );
+
+      expect(() => deserializeStylesLookup('invalid' as any)).toThrowErrorMatchingInlineSnapshot(
+        `"used-styles: got a string instead of serialized style definition object, make sure to parse it back to JS object first"`
+      );
+    });
   });
 
   describe('CSS Cascade Layers', () => {
