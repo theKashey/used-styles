@@ -265,6 +265,28 @@ describe('extraction stories', () => {
         `"used-styles: got a string instead of serialized style definition object, make sure to parse it back to JS object first"`
       );
     });
+
+    test('Serialized defintion is awaitable just like original', async () => {
+      const styles: StyleDefinition = loadStyleDefinitions(
+        () => ['test.css'],
+        () => `
+  @media screen and (min-width:1350px){.content__L0XJ\\+{color:red}}
+  .primary__L4\\+dg{ color: blue}
+  .primary__L4+dg{ color: wrong}
+          `
+      );
+      await styles;
+
+      const serializedDefinition = JSON.stringify(serializeStylesLookup(styles));
+      const deserializedDefinition = loadSerializedLookup(JSON.parse(serializedDefinition));
+
+      await deserializedDefinition;
+
+      const resolve = jest.fn();
+      await deserializedDefinition.then(resolve);
+
+      expect(resolve).toBeCalledTimes(1);
+    });
   });
 
   describe('CSS Cascade Layers', () => {
