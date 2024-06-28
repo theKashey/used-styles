@@ -13,6 +13,19 @@ input { display: none; }
 }</style>"
 `;
 
+exports[`File based css stream works with (de)serialized styles definition 1`] = `
+"<style type=\\"text/css\\" data-used-styles=\\"file1.css,file2.css\\">html { color: htmlRED; }
+input { display: none; }
+@keyframes ANIMATION_NAME {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+    }
+}</style>"
+`;
+
 exports[`React css stream React.renderToStream critical 1`] = `
 "<style type=\\"text/css\\" data-used-styles=\\"file1,file2\\">input { color: rightInput; }
 .a,

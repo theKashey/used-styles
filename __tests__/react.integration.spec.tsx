@@ -13,6 +13,8 @@ import {
   getCriticalStyles,
   getUsedStyles,
   parseProjectStyles,
+  serializeStylesLookup,
+  loadSerializedLookup,
 } from '../src';
 import { StyleDefinition } from '../src/types';
 
@@ -91,6 +93,47 @@ describe('File based css stream', () => {
 
     const usedFiles = getUsedStyles(output, styles);
     const usedCritical = getCriticalStyles(output, styles);
+
+    expect(usedFiles).toEqual(['file1.css', 'file2.css']);
+
+    expect(usedCritical).toMatch(/selector-11/);
+    expect(usedCritical).toMatch(/data-from-file1/);
+    expect(usedCritical).not.toMatch(/data-wrong-file1/);
+    expect(usedCritical).toMatch(/data-from-file2/);
+    expect(usedCritical).not.toMatch(/data-wrong-file1/);
+
+    expect(usedCritical).toMatch(/ANIMATION_NAME/);
+
+    expect(usedCritical).toMatch(/htmlRED/);
+  });
+
+  test('works with (de)serialized styles definition', async () => {
+    await styles;
+
+    const lookupAfterSerialization = loadSerializedLookup(JSON.parse(JSON.stringify(serializeStylesLookup(styles))));
+
+    expect(getUsedStyles('', lookupAfterSerialization)).toEqual(['file1.css']);
+    expect(getCriticalStyles('', lookupAfterSerialization)).toMatchSnapshot();
+
+    const output = renderToString(
+      <div>
+        <div className="only someclass">
+          <div className="another class11">
+            {Array(10)
+              .fill(1)
+              .map((_, index) => (
+                <div key={index}>
+                  <span className="d">{index}</span>
+                </div>
+              ))}
+            <div className="class1" />
+          </div>
+        </div>
+      </div>
+    );
+
+    const usedFiles = getUsedStyles(output, lookupAfterSerialization);
+    const usedCritical = getCriticalStyles(output, lookupAfterSerialization);
 
     expect(usedFiles).toEqual(['file1.css', 'file2.css']);
 

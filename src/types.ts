@@ -38,6 +38,12 @@ export type StyleDefinition = Readonly<{
   then(resolve?: () => void, reject?: () => void): Promise<void>;
 }>;
 
+export type SerializedStyleDefinition = Readonly<{
+  lookup: Readonly<StylesLookupTable>;
+  ast: Readonly<StyleAst>;
+  urlPrefix: string;
+}>;
+
 /**
  * A function used to control which selectors should be used
  * @param selector - DEPRECATED
