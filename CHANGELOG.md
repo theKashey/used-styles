@@ -1,3 +1,52 @@
+## [2.6.5](https://github.com/theKashey/used-styles/compare/v2.6.4...v2.6.5) (2024-05-02)
+
+## [2.6.4](https://github.com/theKashey/used-styles/compare/v2.6.3...v2.6.4) (2024-03-29)
+
+## [2.6.3](https://github.com/theKashey/used-styles/compare/v2.6.2...v2.6.3) (2024-01-21)
+
+## [2.6.2](https://github.com/theKashey/used-styles/compare/v2.6.1...v2.6.2) (2023-11-15)
+
+## [2.6.1](https://github.com/theKashey/used-styles/compare/v2.6.0...v2.6.1) (2023-11-14)
+
+### Bug Fixes
+
+- expose moveStyles API. fixes [#52](https://github.com/theKashey/used-styles/issues/52) ([02731fd](https://github.com/theKashey/used-styles/commit/02731fd2958dba2ab83773cca7451a25f3078118))
+
+# [2.6.0](https://github.com/theKashey/used-styles/compare/v2.5.2...v2.6.0) (2023-09-16)
+
+### Bug Fixes
+
+- **docs:** typo in style extraction info ([58a704e](https://github.com/theKashey/used-styles/commit/58a704e281f153b4ec65df32c4371a10330e603f))
+
+## [2.5.2](https://github.com/theKashey/used-styles/compare/v2.5.1...v2.5.2) (2023-07-27)
+
+## [2.5.1](https://github.com/theKashey/used-styles/compare/v2.5.0...v2.5.1) (2023-07-27)
+
+# [2.5.0](https://github.com/theKashey/used-styles/compare/v2.4.3...v2.5.0) (2023-07-26)
+
+### Bug Fixes
+
+- use smarter class separation, fixes [#46](https://github.com/theKashey/used-styles/issues/46) ([ee2132d](https://github.com/theKashey/used-styles/commit/ee2132d785c608ea0acdd144470a7293cb95ee5b))
+
+## [2.4.3](https://github.com/theKashey/used-styles/compare/v2.4.2...v2.4.3) (2023-05-13)
+
+### Bug Fixes
+
+- add simple extraction example; ease usage of sync types ([fc75e1a](https://github.com/theKashey/used-styles/commit/fc75e1ae6a43c3b444bfaa4e8bc0b2f576538c57))
+
+## [2.4.2](https://github.com/theKashey/used-styles/compare/v2.4.1...v2.4.2) (2023-02-21)
+
+### Bug Fixes
+
+- add support for class names which are keys from object prototype ([ed2d5f9](https://github.com/theKashey/used-styles/commit/ed2d5f94fa1f20d980b71181c33ae021af5c42fc))
+- correct support for multiple classes, fixes [#43](https://github.com/theKashey/used-styles/issues/43) ([fde1497](https://github.com/theKashey/used-styles/commit/fde1497a1a271ac86e320c3056f25a9ed06bf69a))
+
+## [2.4.1](https://github.com/theKashey/used-styles/compare/v2.4.0...v2.4.1) (2022-03-31)
+
+### Bug Fixes
+
+- refactor class introduction ([b85fd08](https://github.com/theKashey/used-styles/commit/b85fd08c3250b6bfc46ddb80a068c493fe2ee1c8))
+
 # [2.4.0](https://github.com/theKashey/used-styles/compare/v2.3.3...v2.4.0) (2022-03-31)
 
 ### Features

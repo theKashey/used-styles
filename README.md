@@ -11,6 +11,10 @@
 
 </div>
 
+> 👋**Version 3** migration notice: `import { discoverProjectStyles } from 'used-styles/node'`. That's it
+
+---
+
 > Bundler and framework independent CSS part of SSR-friendly code splitting
 
 Detects used `css` files from the given HTML, and/or **inlines critical styles**. Supports sync or **stream** rendering.
@@ -149,18 +153,21 @@ Also it may be useful for you, if you want to save on the size of your container
 #### During your build
 
 1. Add separate script to generate style lookup and store it as you like.
+
 ```js
 // project/scripts/generate_styles_lookup.mjs
-import { serializeStylesLookup, discoverProjectStyles } from 'used-styles'
-import { writeFileSync } from 'fs'
+import { serializeStylesLookup, discoverProjectStyles } from 'used-styles';
+import { writeFileSync } from 'fs';
 
 const stylesLookup = discoverProjectStyles('./path/to/dist/client');
 
 await stylesLookup;
 
-writeFileSync('./path/to/dist/server/styles-lookup.json', JSON.stringify(serializeStyles(lookup)))
+writeFileSync('./path/to/dist/server/styles-lookup.json', JSON.stringify(serializeStylesLookup(lookup)));
 ```
+
 2. Run this code after your build
+
 ```sh
 yarn build
 node ./scripts/generate_styles_lookup.mjs
@@ -171,14 +178,15 @@ Notice, that you can store serialized lookup in any way, that suits you and your
 #### During your runtime
 
 1. Access previously created and stored styles lookup, convert it to `StyleDef` with `loadSerializedLookup` and use it normally
-```js
-import { loadSerializedLookup } from 'used-styles'
 
-const stylesLookup = loadSerializedLookup(require('./dist/server/styles-lookup.json');
+```js
+import { loadSerializedLookup } from 'used-styles';
+
+const stylesLookup = loadSerializedLookup(require('./dist/server/styles-lookup.json'));
 
 // ...
 
-getCriticalStyles(markup, stylesLookup)
+getCriticalStyles(markup, stylesLookup);
 ```
 
 # Example
@@ -195,7 +203,8 @@ getCriticalStyles(markup, stylesLookup)
 There is nothing interesting here - just render, just `getUsedStyles`.
 
 ```js
-import {discoverProjectStyles, getUsedStyles} from 'used-styles';
+import {getUsedStyles} from 'used-styles';
+import {discoverProjectStyles} from 'used-styles/node';
 
 
 // generate lookup table on server start
@@ -245,13 +254,8 @@ similar how StyledComponents works
 
 ```js
 import express from 'express';
-import {
-  discoverProjectStyles,
-  loadStyleDefinitions,
-  createCriticalStyleStream,
-  createStyleStream,
-  createLink,
-} from 'used-styles';
+import { discoverProjectStyles } from 'used-styles/node';
+import { loadStyleDefinitions, createCriticalStyleStream, createStyleStream, createLink } from 'used-styles';
 
 const app = express();
 
@@ -380,7 +384,8 @@ That's all are streams, concatenated in a right order. It's possible to interlea
 a `hydrate`.
 
 ```js
-import { discoverProjectStyles, createStyleStream, createLink } from 'used-styles';
+import { createStyleStream, createLink } from 'used-styles';
+import { discoverProjectStyles } from 'used-styles/node';
 import MultiStream from 'multistream';
 
 // .....

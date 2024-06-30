@@ -8,7 +8,6 @@ import {
   createCriticalStyleStream,
   createLink,
   createStyleStream,
-  discoverProjectStyles,
   enableReactOptimization,
   getCriticalStyles,
   getUsedStyles,
@@ -16,6 +15,7 @@ import {
   serializeStylesLookup,
   loadSerializedLookup,
 } from '../src';
+import { discoverProjectStyles } from '../src/index-node';
 import { StyleDefinition } from '../src/types';
 
 describe('File based css stream', () => {
