@@ -1,8 +1,11 @@
-import fs from 'node:fs/promises';
+// @ts-nocheck
+import { readFile } from 'node:fs/promises';
 
 import express from 'express';
 import { loadStyleDefinitions, getCriticalStyles } from 'used-styles';
-import { discoverProjectStyles } from 'used-styles/node';
+// import { discoverProjectStyles } from 'used-styles/node';
+// FIXME: ESM is not fully supported
+import { discoverProjectStyles } from 'used-styles/dist/es5/index-node.js';
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production';
@@ -13,11 +16,15 @@ const base = process.env.BASE || '/';
 const stylesLookup = isProduction
   ? discoverProjectStyles('./dist/client')
   : // in dev mode vite injects all styles to <head/> element
-    loadStyleDefinitions(async () => []);
+    loadStyleDefinitions(
+      async () => [],
+      () => '',
+      () => true
+    );
 
 // Cached production assets
-const templateHtml = isProduction ? await fs.readFile('./dist/client/index.html', 'utf-8') : '';
-const ssrManifest = isProduction ? await fs.readFile('./dist/client/.vite/ssr-manifest.json', 'utf-8') : undefined;
+const templateHtml = isProduction ? await readFile('./dist/client/index.html', 'utf-8') : '';
+const ssrManifest = isProduction ? await readFile('./dist/client/.vite/ssr-manifest.json', 'utf-8') : undefined;
 
 // Create http server
 const app = express();
