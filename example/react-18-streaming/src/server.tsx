@@ -1,11 +1,11 @@
 import express from 'express';
 
 import {
-  discoverProjectStyles,
   createCriticalStyleStream,
   // createStyleStream,
   // createLink,
 } from '../../../';
+import { discoverProjectStyles } from '../../../node';
 
 import { renderApp } from './entry-server';
 
