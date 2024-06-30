@@ -1,4 +1,6 @@
-## [2.6.5](https://github.com/theKashey/used-styles/compare/v2.6.4...v2.6.5) (2024-05-02)
+# [3.0.0](https://github.com/theKashey/used-styles/compare/v2.6.4...v3.0.0) (2024-06-30)
+
+# Breaking change - `discoverProjectStyles` moved to `used-styles/node` entrypoint
 
 ## [2.6.4](https://github.com/theKashey/used-styles/compare/v2.6.3...v2.6.4) (2024-03-29)
 
