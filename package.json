@@ -34,7 +34,8 @@
   },
   "files": [
     "dist",
-    "moveStyles"
+    "moveStyles",
+    "node"
   ],
   "keywords": [
     "nodejs",
