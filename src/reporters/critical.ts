@@ -100,7 +100,7 @@ export const createCriticalStyleStream = (def: StyleDefinition): Transform => {
       if (!hasOpenedPureTagMatch) {
         if (flushContentBuffer) {
           // inject into the beginning of the chunk and flush buffered content
-          _callback(undefined, injectionsBlock + contentBuffer.join() + chunkData);
+          _callback(undefined, injectionsBlock + contentBuffer.join('') + chunkData);
 
           contentBuffer.length = 0;
         } else {
@@ -118,7 +118,7 @@ export const createCriticalStyleStream = (def: StyleDefinition): Transform => {
 
       if (flushContentBuffer) {
         // inject into the beginning of the chunk and flush buffered content
-        _callback(undefined, injectionsBlock + contentBuffer.join() + contentBeforePureTag);
+        _callback(undefined, injectionsBlock + contentBuffer.join('') + contentBeforePureTag);
 
         contentBuffer.length = 0;
       } else {

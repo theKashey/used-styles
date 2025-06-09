@@ -90,9 +90,9 @@ describe('React css stream', () => {
       expect(htmlCritical.includes('</style></style')).toBe(false);
 
       expect(htmlCritical).toMatchInlineSnapshot(`
-        "<style type=\\"text/css\\" data-used-styles=\\"file1\\">.a { color: rightColor; }
-        </style><div class=\\"a\\" data-reactroot=\\"\\"><style type=\\"text/css\\" data-used-styles=\\"file1\\">.b { color: rightColor; }
-        </style><style>.xxxxx { color: red; }
+        "<style type=\\"text/css\\" data-used-styles=\\"file1\\">.a,
+        .b { color: rightColor; }
+        </style><div class=\\"a\\" data-reactroot=\\"\\"><style>.xxxxx { color: red; }
         .xxxxx { color: red; }
         .xxxxx { color: red; }
         .xxxxx { color: red; }
