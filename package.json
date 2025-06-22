@@ -75,5 +75,6 @@
     "semi": true,
     "singleQuote": true
   },
-  "module:es2019": "dist/es2019/index.js"
+  "module:es2019": "dist/es2019/index.js",
+  "packageManager": "yarn@1.22.22"
 }
